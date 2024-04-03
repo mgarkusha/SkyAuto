@@ -1,0 +1,105 @@
+{% extends "base_stats.html" %}
+{% load staticfiles %}
+{% block title %}
+    Stat
+{% endblock %}
+{% block content %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load("current", {packages: ['bar']});
+        google.charts.setOnLoadCallback(drawVisualization);
+
+        function drawVisualization() {
+            var data = google.visualization.arrayToDataTable([
+                ['Год', 'ИТОГО', 'НАЛ', 'ТЕРМ', 'САЙТ', 'Б.НАЛ', 'КОРП.допл'],
+                {% for year in year_chart reversed %}
+                    ['{{ year.year }}', {{ year.all_money }}, {{ year.all_money_cash }}, {{ year.all_money_terminal }}, {{ year.all_money_site_pay }}, {{ year.all_money_corp }}, {{ year.all_money_corp_no_inn }}]{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]);
+
+            var options = {
+                chart: {
+                    title: 'ВЫРУЧКА ПО ГОДАМ',
+                },
+                bars: 'vertical',
+                vAxis: {format: 'decimal'},
+                height: 400,
+                colors: ['#1b9e77', '#d95f02', '#7570b3']
+            }
+
+            var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
+
+            chart.draw(data, google.charts.Bar.convertOptions(options));
+        }
+    </script>
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="columnchart_material" style="width: 100%; height: 500px;"></div>
+                    <table class="table table-condensed table-bordered small">
+                        {% for year in year_chart %}
+                            <tr {% if year.current_year %}class="bg-info"{% endif %}>
+                                <td>{{ year.year }}</td>
+                                <td>-</td>
+                                <td>{{ year.all_money }}</td>
+                                <td>{{ year.all_orders }}</td>
+                                <td>{{ year.all_money_cash }}</td>
+                                <td>{{ year.all_orders_cash }}</td>
+                                <td>{{ year.all_money_terminal }}</td>
+                                <td>{{ year.all_orders_terminal }}</td>
+                                <td>{{ year.all_money_site_pay }}</td>
+                                <td>{{ year.all_orders_site_pay }}</td>
+                                <td>{{ year.all_money_corp }}</td>
+                                <td>{{ year.all_orders_corp }}</td>
+                                <td>{{ year.all_money_corp_no_inn }}</td>
+                                <td>{{ year.all_orders_corp_no_inn }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr style="background: #E2FADB;">
+                            <td>ГОД</td>
+                            <td>МЕС</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> Σ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> ШТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> НАЛ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> НАЛ.ШТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> ТЕРМ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> ТЕРМ.ШТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> САЙТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> САЙТ.ШТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> Б.НАЛ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> Б.НАЛ.ШТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> КОРП.допл</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> КОРП.допл.ШТ</td>
+                        </tr>
+                        {% for date in date_chart %}
+                            <tr {% if date.current_month %}class="bg-info"{% endif %}>
+                                <td>{{ date.year }}</td>
+                                <td>{{ date.month|date:"F" }}</td>
+                                <td>{{ date.all_money }}</td>
+                                <td>{{ date.all_orders }}</td>
+                                <td>{{ date.all_money_cash }}</td>
+                                <td>{{ date.all_orders_cash }}</td>
+                                <td>{{ date.all_money_terminal }}</td>
+                                <td>{{ date.all_orders_terminal }}</td>
+                                <td>{{ date.all_money_site_pay }}</td>
+                                <td>{{ date.all_orders_site_pay }}</td>
+                                <td>{{ date.all_money_corp }}</td>
+                                <td>{{ date.all_orders_corp }}</td>
+                                <td>{{ date.all_money_corp_no_inn }}</td>
+                                <td>{{ date.all_orders_corp_no_inn }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    {% endspaceless %}
+    <script type="text/javascript">
+        {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+        $(document).ready(function () {
+                $("#CorpTable").tablesorter({sortList: [[0, 0]]});
+            }
+        );
+    </script>
+{% endblock %}

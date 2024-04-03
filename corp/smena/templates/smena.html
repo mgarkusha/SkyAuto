@@ -1,0 +1,181 @@
+{% extends "base_smena.html" %}
+{% load staticfiles %}
+{% block title %}
+    Смена
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+            <!-- СМЕНА ХИТ-ПАРАД -->
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-condensed table-bordered table-striped table-hover" id="SmenaChartTable">
+                        <thead>
+                        <tr style="cursor: pointer; background: #E2FADB">
+                            <th class="text-center" style="vertical-align: center">ФИО</th>
+                            <th class="text-center">
+                                <span class="glyphicon glyphicon-cutlery"></span>
+                            </th>
+                            <th class="text-center">
+                                <nobr>На руках<br>(до 10:00)</nobr>
+                            </th>
+                            <th class="text-center">
+                                <nobr>Кол-во</nobr>
+                                <br>дней<br></th>
+                            <th style="background: #d6e9c6">
+                                <div style="display: inline-block; float: left">Всего на руках до<br><span
+                                        style="text-decoration: underline">{{ end_current_day }}</span></div>
+                                <div style="display: inline-block; margin-left: 10px; margin-top: 3px;"><span
+                                        style="font-size: 23px">{{ all_hand_cash }} ₽</span></div>
+                                <div style="display: inline-block; margin-left: 10px;"><a href="/smena/"
+                                                                                          class="btn btn-info"><span
+                                        class="glyphicon glyphicon-refresh"></span></a></div>
+                            </th>
+                            <th><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Показаны последние 3
+                                смены&nbsp;<span
+                                        class="glyphicon glyphicon-info-sign"></span>&nbsp;<span
+                                        class="label label-success">НАЛ</span>&nbsp;<span
+                                        class="label label-primary">ТЕРМИНАЛ</span>&nbsp;<span
+                                        class="label label-warning">БЕЗНАЛ</span>&nbsp;<span
+                                        class="label label-default">РАСХОДЫ</span>&nbsp;<span
+                                        class="label label-danger">ДОЛГ</span></th>
+                            <th class="text-center">На<Br>линии</th>
+                        </tr>
+                        </thead>
+                        {% for driver in driver_chart %}
+                            <tr>
+                                <td><h4>
+                                    {% for name in driver.fullname %}
+                                        {% if name == 'я' %}<strong style="background: red">Больше не работает?</strong>
+                                            <br>
+                                            <span style="background: yellow">Попросите дистетчеров<br>"заблокировать" в программе!<br></span>
+                                        {% endif %}
+                                        {% if forloop.first %}<strong style="font-size: 25px">{% endif %}
+                                    {{ name }}
+                                    {% if forloop.first %}</strong>&nbsp;
+                                        {% if driver.status == 0 %}
+                                            <span class="label label-primary">перв</span>
+                                        {% elif driver.status == 1 %}
+                                            <span class="label label-info">новый</span>
+                                        {% endif %}
+                                    {% endif %}
+                                        <br>
+                                    {% endfor %}
+                                </h4></td>
+                                <td class="text-center">
+                                    {% if driver.open_complaints %}<a href="/complaint/stat/{{ driver.iddriver }}"
+                                       class="btn btn-danger btn-sm"
+                                                                      style="text-transform: uppercase; font-weight: bold; padding: 5px; margin-bottom: 5px;">рассмотреть<br>жалобы: <span style="font-size: 15px">{{ driver.open_complaints }}</span> шт</a><br>{% endif %}
+                                    <a href="/smena/{{ driver.iddriver }}/{{ driver.status }}"
+                                       class="btn btn-primary btn-sm"
+                                       style="text-transform: uppercase; font-weight: bold; padding: 5px;">Закрыть<br>смену</a>
+                                </td>
+                                <td class="text-center">
+                                    <h4 style="font-weight: bold">{% if driver.cash == 'Нет данных' %}
+                                        <span class="glyphicon glyphicon-minus"></span>
+                                        {% else %}{{ driver.cash|floatformat }} ₽{% endif %}</h4>
+                                </td>
+                                <td class="text-center"><h4 style="font-weight: bold">
+                                    {% if driver.count_days_last_smena > 1 %}{{ driver.count_days_last_smena }}
+                                    {% elif driver.count_days_last_smena > 0 and driver.count_days_last_smena <= 1 %}
+                                        <span style="display: none">1</span>
+                                        <span class="label label-warning">вчера</span>
+                                    {% elif driver.count_days_last_smena <= 0 %}
+                                        <span style="display: none">0</span>
+                                        <span class="label label-success">cегодня</span>
+                                    {% else %}
+                                        <span class="glyphicon glyphicon-minus"></span>{% endif %}</h4></td>
+                                <td colspan="2">
+                                    <div class="btn-group">
+                                        {% for smena in driver.smena_chart %}
+                                            <a href="{{ smena.smena_id }}" type="button" class="btn btn-default"
+                                               style="padding: 1px; margin-right: 2px; border: none">
+                                                <table class="table-responsive text-center table-bordered"
+                                                       style="border-width: 3px">
+                                                    <tr style="background: #bce8f1">
+                                                        <td>
+                                                            <span class="glyphicon glyphicon-plus"></span>
+                                                        </td>
+                                                        <td>
+                                                            {#                                                    <small class="table-bordered"> №{{ smena.number }}</small>&nbsp;#}
+                                                            <strong>{{ smena.date }}</strong>
+                                                        </td>
+                                                        <td><span class="glyphicon glyphicon-minus"></span></td>
+                                                    </tr>
+                                                    <tr style="vertical-align: top;">
+                                                        <td style="padding: 2px;" class="text-center">
+                                                            {% if smena.money_to_boss_fact %}
+                                                                <span class="label label-success">{{ smena.money_to_boss_fact }} ₽</span>
+                                                                <br>{% endif %}{% if smena.proceeds_terminal %}
+                                                            <span class="label label-primary">{{ smena.proceeds_terminal }} ₽</span>
+                                                            <br>{% endif %}{% if smena.proceeds_corporate_bank %}
+                                                            <span class="label label-warning">{{ smena.proceeds_corporate_bank }} ₽</span>{% else %}
+                                                            <span class="label label-default">нет</span>{% endif %}
+                                                        </td>
+                                                        <td class="table-bordered">
+                                                            {% if smena.start_date %}{{ smena.start_date }}<br>
+                                                                <small class="table-bordered"
+                                                                       style="padding: 2px; margin-right: 1px; font-weight: bold">{{ smena.delta_cash }}
+                                                                    ₽
+                                                                </small>
+                                                                {% if smena.run != None %}
+                                                                    <small class="table-bordered {% if smena.run == 0 %}label label-danger{% endif %}"
+                                                                           style="padding: 2px; margin-left: 3px; font-weight: bold">
+                                                                        {{ smena.run }} км
+                                                                    </small>
+                                                                {% else %}
+                                                                    <span class="glyphicon glyphicon-arrow-down"></span>
+                                                                {% endif %}
+                                                                {% if smena.fuel_consumption %}
+                                                                <small class="table-bordered {% if smena.fuel_consumption < 10 %}bg-success{% else %}bg-danger{% endif %}"
+                                                                       style="padding: 2px; margin-left: 3px; font-weight: bold">{{ smena.fuel_consumption }} л</small>
+                                                                {% endif %}
+                                                                <small class="table-bordered"
+                                                                       style="padding: 2px; margin-left: 3px; font-weight: bold">{{ smena.delta_days }}
+                                                                    дн
+                                                                </small><br>
+                                                                {{ smena.finish_date }}{% else %}{% endif %}
+                                                        </td>
+                                                        <td style="padding: 2px;">
+                                                            {% if smena.spending %}
+                                                                <span class="label label-default">{{ smena.spending }} ₽</span>
+                                                                <br>
+                                                            {% else %}
+                                                                <span class="label label-default">нет</span><br>
+                                                            {% endif %}
+                                                            {% if smena.debt %}
+                                                                <span class="label label-danger">{{ smena.debt }} ₽</span>
+                                                                <br>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </a>
+                                            </div>{% endfor %}
+                                </td>
+                                {% if driver.driver_on_off %}
+                                    <td class="bg-success text-center"><span class="glyphicon glyphicon-ok"></span><span
+                                            style="display: none">+</span></td>
+                                {% else %}
+                                    <td class="bg-danger text-center"><span
+                                            class="glyphicon glyphicon-minus"></span><span
+                                            style="display: none">-</span></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    </form>
+                    <p class="text-danger">Отключенные водители:
+                        {% for driver_name in driver_list_my_block_names %}{{ driver_name }}, {% endfor %}</p>
+                </div>
+            </div>
+            <script type="text/javascript">
+                {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+                $(document).ready(function () {
+                        $("#SmenaChartTable").tablesorter({sortList: [[5, 1]]});
+                    }
+                );
+            </script>
+        {% endif %}
+    {% endspaceless %}
+{% endblock %}

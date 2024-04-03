@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="row" style="margin-bottom: 20px;">
+                <div class="col-md-12">
+                    <h1>Список заказов</h1>
+                    <table class="table small table-condensed table-bordered table-striped table-hover"
+                           style="font-size: 125%;">
+                        <thead>
+                        <tr>
+                            <th style="text-align: center;"><span class="glyphicon glyphicon-calendar"></span></th>
+                            <th style="text-align: center;">Парк</th>
+                            <th style="text-align: center;">Тип</th>
+                            <th style="text-align: center;">Номер</th>
+                            <th style="text-align: center;">Доп</th>
+{#                            <th style="text-align: center;">Услуги</th>#}
+                            <th style="text-align: center;">₽</th>
+                            <th style="text-align: center;"><span class="glyphicon glyphicon-cog"></span></th>
+                        </tr>
+                        </thead>
+                        {% for order in order_chart %}
+                            <tr {% if order.selected %}style="background: #e7edad;" {% endif %}>
+                                <td>{{ order.dt|date:"d M H:i" }}</td>
+                                <td align="center">{% if order.park %}
+                                    <span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
+                                <td>{{ order.car_type }}</td>
+                                <td>{{ order.num|upper }}</td>
+{#                                <td>{% for name in order.service_list %}{{ name }}<br>{% endfor %}</td>#}
+                                <td align="center">{% if order.add_service %}
+                                    <span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
+                                <td>{{ order.sum }}</td>
+                                <td width="1%;" style="white-space: nowrap"><a href="/wash/{{ order.id }}"
+                                                                               class="btn btn-primary btn-sm"
+                                                                               type="submit"><span
+                                        class="glyphicon glyphicon-pencil"></span></a>&nbsp;<a
+                                        href="/wash/wash_delete/{{ order.id }}" class="btn btn-danger btn-sm"
+                                        onclick="return confirmDeleteWashOrder('{{ order.num|upper }}', '{{ order.dt|date:"d M H:i" }}')"
+                                        type="submit"><span class="glyphicon glyphicon-remove"></span></a></td>
+                            </tr>
+                        {% endfor %}
+                </div>
+        </div>
+</body>
+</html>

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load bootstrap %}
+{% load staticfiles %}
+{% block title %}
+    {% if update_active %}
+        Редактирование жалобы
+    {% else %}
+        Добавление жалобы
+    {% endif %}
+{% endblock %}
+{% block content %}
+    {% if update_active %}
+        <h3>Изменить жалобу № {{ complaint_num }} от {{ time }}</h3>
+    {% else %}
+        <h3>Жалоба № {{ complaint_num }} от {{ time }}</h3>
+    {% endif %}
+    <form method="POST" action="" id="complaint_form">{% csrf_token %}
+        <div class="row">
+            <div class="col-md-2">
+                <h4>Готовые варианты жалоб</h4>
+                <div style="display: block; width: 100%; float: right; border: 2px black;">
+                    <a onclick="go_comment('Не подтверждает заказы');" href="#" class="btn btn-default"
+                       style="width: 100%; margin-bottom: 8px; background: #ccffe6">Не подтверждает заказы</a>
+                    <a onclick="go_comment('Не снимает трубку');" href="#" class="btn btn-default"
+                       style="width: 100%; margin-bottom: 8px; background: #ccffff">Не снимает трубку</a>
+                    <a onclick="go_comment('Не проставляет статусы');" href="#" class="btn btn-default"
+                       style="width: 100%; margin-bottom: 8px; background: #ffe6ff">Не проставляет статусы</a>
+                    <a onclick="go_comment('Не звонит клиенту с номера телефона в заказе');" href="#"
+                       class="btn btn-default" style="width: 100%; margin-bottom: 8px; background: #ffffcc">Не звонит
+                        клиенту с<br>номера телефона в заказе</a>
+                    <a onclick="go_comment('Превысил скорость по просьбе диспетчера');" href="#" class="btn btn-default"
+                       style="width: 100%; margin-bottom: 8px; background: #ffd9cc">Превысил скорость по<br>просьбе
+                        диспетчера</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <h4>Окно подачи жалобы</h4>
+                {{ form|bootstrap }}
+                {% if update_active %}
+                    <button class="btn btn-danger btn-block" type="submit">СОХРАНИТЬ ЖАЛОБУ!</button>
+                {% else %}
+                    <button class="btn btn-danger btn-block" type="submit">ПОДАТЬ ЖАЛОБУ!</button>
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                <h4>Водители:</h4>
+                <table class="table table-bordered">
+                    {% for driver in driver_chart %}
+                        <tr style="padding: 5px;" {% if driver.online %}class="bg-success"{% endif %}>
+                            <td style="padding: 5px;">{% if driver.online %}
+                                <span class="label label-info">on</span>{% else %}
+                                <span class="label label-default">off</span>{% endif %}</td>
+                            <td style="padding: 5px;">
+                                <label class="container1"
+                                       style="margin-bottom: 0; width: 100%; min-height: 100%; height: auto !important; height: 100%; display: block;">
+                                    <input type="radio" name="driver_id"
+                                           value="{{ driver.id }}">&nbsp;&nbsp;&nbsp;{{ driver.fullname }}<span
+                                        class="checkmark"></span>
+                                </label>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="col-md-2">
+                <h4>Авто:</h4>
+                <table class="table table-bordered">
+                    {% for car in cars_online_cart %}
+                        <tr style="padding: 5px;" class="bg-success">
+                            <td style="padding: 5px;">
+                                <label class="container1" style="margin-bottom: 0;">
+                                    <input type="radio" name="car_id"
+                                           value="{{ car.id }}">&nbsp;&nbsp;&nbsp;{{ car.callsign }}
+                                    - {{ car.number }}<span class="checkmark"></span>
+                                </label>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% for i in car_inifnity %}
+                        <tr style="padding: 5px;">
+                            <td style="padding: 5px;">
+                                <label class="container1" style="margin-bottom: 0;">
+                                    <input type="radio" name="car_id"
+                                           value="{{ i.id }}">&nbsp;&nbsp;&nbsp;{{ i.callsign }}
+                                    - {{ i.number }}<span class="checkmark"></span>
+                                </label>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </form>
+    <script type="text/javascript">
+        var complaint_form = document.getElementById('complaint_form');
+
+        /* Подстановка комментария */
+        function go_comment(comment) {
+            document.getElementById('id_complaint_text').value = comment;
+        }
+    </script>
+{% endblock %}

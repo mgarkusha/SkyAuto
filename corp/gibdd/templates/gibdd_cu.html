@@ -1,0 +1,396 @@
+{% extends "base_gibdd.html" %}
+{% load staticfiles %}
+{% block title %}
+    Штрафы ГИБДД
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <form role="form" class="form-inline" method="POST" action="" id="gibdd_form">{% csrf_token %}
+            <div class="row" style="margin-top: 20px">
+                <div class="col-md-4">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading" align="center">
+                            <h3 class="panel-title">ПОСТАНОВЛЕНИЕ ГИБДД</h3>
+                        </div>
+                        <table class="table table-bordered small">
+                            <tr>
+                                <td>
+                                    <div class="input-group width100">
+                                    <span class="input-group-addon" style="width: 150px;"><span
+                                            class="glyphicon glyphicon-time"></span> Нарушения</span>
+                                        <input type="text" class="form-control datepicker-here" data-timepicker="true"
+                                               name="incident_date" id="incident_date"><span class="input-group-btn"><button
+                                            class="btn btn-default width100" type="button"
+                                            onclick="incident_calculate()"><strong>Поиск</strong></button></span>
+                                    </div>
+                                    <div class="result" id="for_regexp_finishDate" style="display: none"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="input-group width100">
+                                        <span class="input-group-addon" id="css-spendings-name" style="width: 150px;">№ Постановления</span>
+                                        <input type="text" class="form-control" id="incident_number"
+                                               name="incident_number" value="{{ incident_number }}" placeholder="Только ЦИФРЫ" {% if not incident_marker %}disabled{% endif %}></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="input-group width100">
+                                    <span class="input-group-addon" style="width: 150px;"><span
+                                            class="glyphicon glyphicon-time"></span> Постановления</span>
+                                        <input type="text" class="form-control datepicker-here"
+                                               name="incident_decree_date" id="incident_decree_date" value="{{ incident_decree_date }}" {% if not incident_marker %}disabled{% endif %}><span
+                                            class="input-group-btn"></span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="input-group width100">
+                                        <span class="input-group-addon" id="css-spendings-name" style="width: 150px;">Место нарушения</span>
+                                        <input type="text" class="form-control" id="incident_place"
+                                               name="incident_place" value="{{ incident_place }}" placeholder="" {% if not incident_marker %}disabled{% endif %}></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="input-group width100">
+                                        <span class="input-group-addon" id="css-spendings-name" style="width: 150px;">Сумма штрафа</span>
+                                        <input type="text" class="form-control" id="penalty_gibdd"
+                                               name="penalty_gibdd" value="{{ penalty_gibdd }}" placeholder="" {% if not incident_marker %}disabled{% endif %}></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">
+                                    <div class="input-group width100">
+                                        <a onclick="go_penalty('250');" class="btn btn-default"
+                                           style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #edff00;">250</a>
+                                        <a onclick="go_penalty('500');" class="btn btn-default"
+                                           style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #fff400;">500</a>
+                                        <a onclick="go_penalty('750');" class="btn btn-default"
+                                           style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #ffcc00;">750</a>
+                                        <a onclick="go_penalty('1000');" class="btn btn-default"
+                                           style="width:63px; font-size: 17px; height: 40px; margin-right: 10px; background: #ffb101;">1000</a>
+                                        <a onclick="go_penalty('1500');" class="btn btn-default"
+                                           style="width:63px; font-size: 17px; height: 40px; margin-right: 10px; background: #ff7500;">1500</a>
+                                        <a onclick="go_penalty('2000');" class="btn btn-default"
+                                           style="width:63px; font-size: 17px; height: 40px; background: #ff5e00;">2000</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="panel panel-success">
+                        <div class="panel-heading" align="center">
+                            <h3 class="panel-title">РЕЗУЛЬТАТ РАССМОТРЕНИЯ ШТРАФА</h3>
+                        </div>
+                        <table class="table table-bordered">
+                            <tr>
+                                <td colspan="2" style="padding: 1px">
+
+                                    <table class="table table-condensed text-center"
+                                           style="margin-bottom: 3px; font-weight: bold;">
+                                        <tr>
+                                            <td>
+                                                Штраф ГИБДД
+                                            </td>
+                                            <td>
+                                                Штраф Компании
+                                            </td>
+                                            <td>
+                                                Итого
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <input type="text" class="form-control alert-danger"
+                                                       id="penalty_gibdd_result"
+                                                       name="penalty_gibdd_result" value="{{ penalty_gibdd }}"
+                                                       style="width:100%; font-size: 20px; height: 35px; text-align: center"
+                                                       readonly>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control alert-danger"
+                                                       id="penalty_company"
+                                                       name="penalty_company" value="{{ penalty_company }}"
+                                                       style="width:100%; font-size: 20px; height: 35px; text-align: center" {% if not incident_marker %}disabled{% endif %}>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control alert-danger"
+                                                       id="penalty_result"
+                                                       name="penalty_result" value=""
+                                                       style="width:100%; font-size: 20px; height: 35px; text-align: center"
+                                                       readonly>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" style="text-align: center">
+                                                <div class="input-group">
+                                                    <a onclick="go_company_penalty('0');" class="btn btn-default"
+                                                       style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #f3ffe6;">0</a>
+                                                    <a onclick="go_company_penalty('100');" class="btn btn-default"
+                                                       style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #b3ff00;">100</a>
+                                                    <a onclick="go_company_penalty('250');" class="btn btn-default"
+                                                       style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #edff00;">250</a>
+                                                    <a onclick="go_company_penalty('500');" class="btn btn-default"
+                                                       style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #fff400;">500</a>
+                                                    <a onclick="go_company_penalty('750');" class="btn btn-default"
+                                                       style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #ffcc00;">750</a>
+                                                    <a onclick="go_company_penalty('1000');" class="btn btn-default"
+                                                       style="width:63px; font-size: 17px; height: 40px; margin-right: 10px; background: #ffb101;">1000</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td align="center" style="font-weight: bold;" width="50%">ОПЛАЧЕН В ГИБДД<br>
+                                    <input type="checkbox" id="penalty_gibdd_paid" name="penalty_gibdd_paid"
+                                           {% if penalty_gibdd_paid %}checked="checked"{% endif %}
+                                           style="height: 75px; width: 75px;"><br>Дата оплаты в ГИБДД:<br><span style="color: #e38d13; font-weight: bold;">{% if penalty_gibdd_paid %}{{ penalty_gibdd_paid_date }}{% else %}дата установки галочки{% endif %}</span>
+                                </td>
+                                <td><textarea {% if not incident_marker %}disabled{% endif %} class="form-control" style="width: 100%; font-size: 20px;"
+                                              rows="4" name="manager_comment" id="manager_comment"
+                                              placeholder="Комментарий руководителя">{{ manager_comment }}</textarea></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <nobr><a href="/gibdd" class="btn btn-info text-center width50 btn-lg"
+                             style="margin-top: -5px">Вернуться</a>&nbsp;<button type="submit"
+                                                                                 class="btn btn-primary text-center width50 btn-lg"
+                                                                                 style="margin-top: -5px">
+                        Сохранить штраф
+                    </button>
+                    </nobr>
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" align="center">
+                            <h3 class="panel-title">ВОДИТЕЛИ И АВТО</h3>
+                        </div>
+                        <table class="table table-bordered ">
+                            {% if not incident_marker %}
+                                <tr>
+                                    <td>
+                                        <h2><span class="glyphicon glyphicon-arrow-left"></span> Введите дату
+                                            нарушения
+                                        </h2>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <thead>
+                                <tr>
+                                    <th width="150px" style="text-align: center">Авто</th>
+                                    <th>Водитель</th>
+                                    <th style="text-align: center">Статус</th>
+                                </tr>
+                                </thead>
+                                {% for driver in driver_chart %}
+                                    <tr style="padding: 5px;" {% if driver.state %}class="bg-success"{% endif %}>
+                                        <td style="padding: 5px; white-space: nowrap;">
+                                            <label class="container1" style="margin-bottom: 0;">
+                                                <input type="radio" name="idcar_driver_id"
+                                                       value="{{ driver.idcar }}_{{ driver.driver_id }}" {% if driver.checked %}checked{% endif %}>&nbsp;&nbsp;&nbsp;{{ driver.car_number }}<span
+                                                    class="checkmark"></span>
+                                            </label>
+                                        </td>
+                                        <td>{{ driver.fullname }}</td>
+                                        {% if driver.state %}
+                                            {% if driver.state == 2 %}
+                                                <td style="background: #6dda35; text-align: center">На линии</td>
+                                            {% elif driver.state == 3 %}
+                                                <td style="background: #2aabd2; text-align: center">На заказе</td>
+                                            {% elif driver.state == 4 %}
+                                                <td style="background: #ffc900; text-align: center">Перерыв</td>
+                                            {% elif driver.state == 5 %}
+                                                <td style="background: #dca7a7; text-align: center">Поломка</td>
+                                            {% elif driver.state == 7 %}
+                                                <td style="background: #4EB5E6; text-align: center">Назначен</td>
+                                            {% endif %}
+                                        {% else %}
+                                            <td style="background: #f4f4f4; text-align: center">Отключен</td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                                <tr style="padding: 5px;" class="bg-danger">
+                                    <td style="padding: 5px;">
+                                        <label class="container1" style="margin-bottom: 0;">
+                                            <input type="radio" name="car_id"
+                                                   value="000_000">&nbsp;&nbsp;&nbsp;Неизвестно<span
+                                                class="checkmark"></span>
+                                        </label>
+                                    </td>
+                                    <td>Неизвестно</td>
+                                    <td style="background: #f4f4f4; text-align: center">Отключен</td>
+
+                                </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-warning">
+                        <div class="panel-heading" align="center">
+                            <h4 class="panel-title">Нарушение скоростного режима</h4>
+                        </div>
+                        <table class="table table-bordered small">
+                            <tr>
+                                <td>
+                                    <input type="text" class="form-control alert-danger" id="incident_speed"
+                                           name="incident_speed" value="{{ incident_speed }}"
+                                           style="width:65px; font-size: 25px; height: 45px; margin-right: 10px; float: left;">
+                                    <input type="text" class="form-control alert-success" id="speed_recommend"
+                                           name="speed_recommend" value="{{ speed_recommend }}"
+                                           style="width:65px; font-size: 25px; height: 45px; margin-right: 10px; float: left;">
+                                    <a onclick="go_speed('40');" class="btn btn-default"
+                                       style="width:50px; font-size: 22px; height: 45px; margin-right: 10px; float: left;">40</a>
+                                    <a onclick="go_speed('60');" class="btn btn-default"
+                                       style="width:50px; font-size: 22px; height: 45px; margin-right: 10px; float: left;">60</a>
+                                    <a onclick="go_speed('90');" class="btn btn-default"
+                                       style="width:50px; font-size: 22px; height: 45px; margin-right: 10px; float: left;">90</a>
+                                    <a onclick="go_speed('110');" class="btn btn-default"
+                                       style="width:65px; font-size: 22px; height: 45px; float: left;">110</a>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="panel-heading" align="center">
+                            <h4 class="panel-title">Другие нарушения</h4>
+                        </div>
+                        <table class="table table-bordered small">
+                            <tr>
+                                <td width="50%">
+                                <textarea {% if not incident_marker %}disabled{% endif %} class="form-control" style="width: 100%; margin-top: 9px; font-size: 20px;"
+                                          rows="10"
+                                          name="incident_type" id="incident_type"
+                                          placeholder="Суть нарушения">{{ incident_type }}</textarea><br><br>
+                                    <a onclick="go_comment('');" href="#" class="btn btn-default"
+                                       style="width: 100%; margin-bottom: 8px;"><span
+                                            class="glyphicon glyphicon-trash"></span> Очистить <span
+                                            class="glyphicon glyphicon-trash"></span></a>
+                                </td>
+                                <td width="50%">
+                                    <h4>Нарушение остановки/стоянки</h4>
+                                    <a onclick="go_comment('Знак 3.27 Остановка запрещена');" href="#"
+                                       class="btn btn-default"
+                                       style="width: 100%; margin-bottom: 8px; background: #ccffe6">Знак 3.27 "Остановка<br>
+                                        запрещена"</a>
+                                    <a onclick="go_comment('Знак 3.27 Стоянка запрещена');" href="#"
+                                       class="btn btn-default"
+                                       style="width: 100%; margin-bottom: 8px; background: #ccffff">Знак 3.28
+                                        "Стоянка<br>запрещена"</a>
+                                    <a onclick="go_comment('Занаки 8.17 + 6.4 Места для инвалидов');" href="#"
+                                       class="btn btn-default"
+                                       style="width: 100%; margin-bottom: 8px; background: #ffe6ff">Занаки 8.17 +
+                                        6.4<br>"Места
+                                        для инвалидов"</a>
+                                    <h4>Движение по обочине</h4>
+                                    <a onclick="go_comment('Движение по обочине');" href="#" class="btn btn-default"
+                                       style="width: 100%; margin-bottom: 8px; background: #ffffcc">Движение по
+                                        обочине</a>
+                                    <a onclick="go_comment('Движение по обочине КАД');" href="#" class="btn btn-default"
+                                       style="width: 100%; margin-bottom: 8px; background: #ffffcc">Движение по обочине
+                                        КАД</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </form>
+    {% endspaceless %}
+    <script type="text/javascript">
+        /* Инициализация календарика */
+        var incident_date = new Date({{ incident_date|date:"Y" }}, {{ incident_date|date:"m" }}-1, {{ incident_date|date:"j" }}, {{ incident_date|date:"H" }}, {{ incident_date|date:"i" }});
+        var incident_decree_date = new Date({{ incident_decree_date|date:"Y" }}, {{ incident_decree_date|date:"m" }}-1, {{ incident_decree_date|date:"j" }}, {{ incident_decree_date|date:"H" }}, {{ incident_decree_date|date:"i" }});
+        var dp = $('#incident_date').datepicker({startDate: incident_date}).data('datepicker');
+        var dpp = $('#incident_decree_date').datepicker({startDate: incident_decree_date}).data('datepicker');
+        dp.selectDate(incident_date);
+        dpp.selectDate(incident_decree_date);
+
+        /* -----------
+            Пересчёт смены
+        ---------- */
+        // Копируем в DIV класса result выбранное значение календарика
+        $(function () {
+            var datepicker = $('.datepicker-here').datepicker({
+                onSelect: function (formattedDate, date, inst) {
+                    $('.result').text(formattedDate);
+                }
+            }).data('datepicker');
+            $('.calc__date_wrap').click(function () {
+                $('.datepicker-here').toggle();
+            });
+        });
+
+        /* Поиск работающих водителей по дате */
+        function incident_calculate() {
+            var incidentDate = document.getElementById('for_regexp_finishDate').innerText;
+            var new_url = document.getElementById('for_regexp_finishDate').innerText = incidentDate.replace(/\D/g, "/");
+            window.location.href = '/gibdd_cu/' + new_url;
+        }
+
+
+        /* Подстановка суммы штрафа */
+        function go_penalty(penalty) {
+            document.getElementById('penalty_gibdd').value = penalty;
+            calculate_penalty()
+        }
+
+        /* Подстановка суммы штрафа компании  */
+        function go_company_penalty(penalty) {
+            document.getElementById('penalty_company').value = penalty;
+            calculate_penalty()
+        }
+
+        /* Подстановка разрешенной скорости */
+        function go_speed(speed) {
+            document.getElementById('speed_recommend').value = speed;
+        }
+
+        /* Подстановка сути нарушения */
+        function go_comment(comment) {
+            document.getElementById('incident_type').value = comment;
+        }
+
+        /* Калькуляция итогов */
+        gibdd_form.oninput = function () {
+            calculate_penalty();
+        };
+        calculate_penalty();
+
+        function calculate_penalty() {
+            var penalty_gibdd = parseInt(document.getElementById('penalty_gibdd').value);
+            var penalty_company = parseInt(document.getElementById('penalty_company').value);
+
+            if (isNaN(penalty_gibdd)) penalty_gibdd = 0;
+            if (isNaN(penalty_company)) penalty_company = 0;
+
+            var penalty_result = penalty_gibdd + penalty_company
+
+
+            /* if (isNaN(penalty_company))
+                document.getElementById('penalty_company').value = '0';
+             else
+                document.getElementById('penalty_company').value = penalty_company;
+            */
+
+            if (isNaN(penalty_result)) {
+                document.getElementById('penalty_result').value = '0';
+            } else {
+                document.getElementById('penalty_result').value = penalty_result;
+            }
+
+            if (isNaN(penalty_gibdd)) {
+                document.getElementById('penalty_gibdd').value = '0';
+                document.getElementById('penalty_gibdd_result').value = '0';
+            } else {
+                document.getElementById('penalty_gibdd').value = penalty_gibdd;
+                document.getElementById('penalty_gibdd_result').value = penalty_gibdd;
+            }
+        }
+
+    </script>
+{% endblock %}

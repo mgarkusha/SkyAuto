@@ -1,0 +1,111 @@
+{% extends "base_gibdd.html" %}
+{% load staticfiles %}
+{% block title %}
+    Штрафы ГИБДД
+{% endblock %}
+{% block content %}
+    {% if user.is_authenticated %}
+        {% spaceless %}
+            <div class="row">
+                <div class="col-md-12">
+                    {% if gibdd_marker %}
+                    <table class="table table-responsive">
+                        <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Дата</th>
+                            <th>Дата нарушения</th>
+                            <th>Скорость</th>
+                            <th>№ постановления</th>
+                            <th>Дата постановления</th>
+                            <th>Сумма штрафа ГИБДД</th>
+                            <th>Водитель</th>
+                            <th>Авто</th>
+                            <th>Сумма штрафа КОМПАНИИ</th>
+                            <th>Сумма ИТОГ</th>
+                            <th>Оплата в ГИБДД</th>
+                            <th>Комментарий</th>
+                            <th>Действие</th>
+                        </tr>
+                        {% for gibdd in gibdd_penalties %}
+                            {% if gibdd.penalty_driver_paid %}
+                                <tr style="background: #b6ffb6">
+                            {% else %}
+                                <tr style="background: #ffded8">
+                            {% endif %}
+                                <td>{{ gibdd.id }}</td>
+                                <td>{{ gibdd.date }}</td>
+                                <td>{{ gibdd.incident_date }}</td>
+                                <td>{{ gibdd.incident_speed }}</td>
+                                <td>{{ gibdd.incident_number }}</td>
+                                <td>{{ gibdd.incident_decree_date }}</td>
+                                <td>{{ gibdd.penalty_gibdd }}</td>
+                                <td>{{ gibdd.get_driver_name }}</td>
+                                <td>{{ gibdd.get_car_number }}</td>
+                                <td>{{ gibdd.penalty_company }}</td>
+                                <td>{{ gibdd.penalty_gibdd|add:gibdd.penalty_company }}</td>
+                                {% if gibdd.penalty_gibdd_paid %}
+                                    <td style="background: #5cb85c; color: white;" align="center"><span class="glyphicon glyphicon-ok"></span></td>
+                                {% else %}
+                                    <td style="background: #ff7500; color: white;" align="center"><span class="glyphicon glyphicon-remove"></span></td>
+                                {% endif %}
+                                <td>{{ gibdd.manager_comment }}</td>
+                                <td>
+                                    <a href="/gibdd/{{ gibdd.id }}" class="btn btn-primary btn-block btn-sm btn-block" type="submit">Изменить</a>
+                                    <a href="/gibdd/gibdd_delete/{{ gibdd.id }}" class="btn btn-danger btn-block btn-sm"
+                                       onclick="return confirmDeleteGibdd({{ gibdd.id }}, '{{ gibdd.date }}')"
+                                       type="submit">Удалить</a></td>
+                            </tr>
+                        {% endfor %}
+                        </thead>
+                    </table>
+                {% endif %}
+                {% if company_penalty_marker %}
+                                        <table class="table table-responsive">
+                        <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Дата</th>
+                            <th>Дата нарушения</th>
+                            <th>Скорость</th>
+                            <th>Водитель</th>
+                            <th>Авто</th>
+                            <th>Сумма штрафа КОМПАНИИ</th>
+                            <th>Оплата водителем</th>
+                            <th>Комментарий</th>
+                            <th>Действие</th>
+                        </tr>
+                        {% for penalty in company_penalties %}
+                            {% if penalty.penalty_driver_paid %}
+                                <tr style="background: #b6ffb6">
+                            {% else %}
+                                <tr style="background: #ffded8">
+                            {% endif %}
+                                <td>{{ penalty.id }}</td>
+                                <td>{{ penalty.date }}</td>
+                                <td>{{ penalty.incident_date }}</td>
+                                <td>{{ penalty.incident_speed }}</td>
+                                <td>{{ penalty.get_driver_name }}</td>
+                                <td>{{ penalty.get_car_number }}</td>
+                                <td>{{ penalty.penalty_company }}</td>
+                                {% if penalty.penalty_driver_paid %}
+                                    <td style="background: #5cb85c; color: white;" align="center"><span class="glyphicon glyphicon-ok"></span></td>
+                                {% else %}
+                                    <td style="background: #ff7500; color: white;" align="center"><span class="glyphicon glyphicon-remove"></span></td>
+                                {% endif %}
+                                <td>{{ penalty.manager_comment }}</td>
+                                <td>
+                                    <a href="/company_penalty_cu/{{ penalty.id }}" class="btn btn-primary btn-block btn-sm btn-block" type="submit">Изменить</a>
+                                    <a href="/company_penalty_cu/company_penalty_delete/{{ penalty.id }}" class="btn btn-danger btn-block btn-sm"
+                                       onclick="return confirmDeleteGibdd({{ penalty.id }}, '{{ penalty.date }}')"
+                                       type="submit">Удалить</a></td>
+                            </tr>
+                        {% endfor %}
+                        </thead>
+                    </table>
+                {% endif %}
+                </div>
+            </div>
+        {% endspaceless %}
+    {% endif %}
+{% endblock %}

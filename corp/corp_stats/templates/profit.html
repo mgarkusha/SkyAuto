@@ -1,0 +1,114 @@
+{% extends "base_stats.html" %}
+{% load staticfiles %}
+{% block title %}
+    Stat
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-condensed table-bordered small">
+                        <tr style="font-weight: bold; text-align: center; font-size: 15px;">
+                            <td colspan="2" style="background: #e5ede4;">Дата</td>
+                            <td width="1" style="background: #dddddd;"></td>
+                            <td colspan="4" style="background: #E2FADB;">Доходы</td>
+                            <td width="1" style="background: #dddddd;"></td>
+                            <td colspan="10" style="background: #faeace;">Расходы</td>
+                            <td style="background: #faf7ce;">Операционные</td>
+                            <td width="1" style="background: #dddddd;"></td>
+                            <td style="background: #e7f3fa;">Чистая прибыль</td>
+                        </tr>
+                        <tr style="font-weight: bold; text-align: center; font-size: 14px;">
+                            <td>ГОД</td>
+                            <td>МЕСЯЦ</td>
+                            <td width="1" style="background: #dddddd;"></td>
+                            <td>Безнал + Сайт</td>
+                            <td>Терминал</td>
+                            <td>Нал</td>
+                            <td>ИТОГО</td>
+                            <td width="1" style="background: #dddddd;"></td>
+                            <td>Бенз</td>
+                            <td>Мойка</td>
+                            <td>Мойка (б/н)</td>
+                            <td>Парковка</td>
+                            <td>Омывайка</td>
+                            <td>ТО</td>
+                            <td>Лампы</td>
+                            <td>Ремонт</td>
+                            <td>Прочее</td>
+                            <td>ИТОГО</td>
+                            <td>ЗП выплачено</td>
+                            <td width="1" style="background: #dddddd;"></td>
+                            <td>Дох - Расх - Операц</td>
+                        </tr>
+                    <tr>
+                        <td colspan="22" style="background: #dddddd;" height="1"></td>
+                    </tr>
+                    {% for year in year_chart %}
+                            <tr {% if year.current_year %} style="font-weight: bold; background: #dffffc; color: #4b4b4b;"{% endif %}>
+                                <td style="font-size: 14px;">{{ year.year }}</td>
+                                <td>-</td>
+                                <td width="1" style="background: #dddddd;"></td>
+                                <td>{{ year.proceeds_corporate_bank }}</td>
+                                <td>{{ year.proceeds_terminal }}</td>
+                                <td>{{ year.proceeds_cash }}</td>
+                                <td style="font-weight: bold;">{{ year.all_money }}</td>
+                                <td width="1" style="background: #dddddd;"></td>
+                                <td>{{ year.spending_fuel_cash }}</td>
+                                <td>{{ year.spending_carwash }}</td>
+                                <td>{{ year.spending_carwash_bank }}</td>
+                                <td>{{ year.spending_parking }}</td>
+                                <td>{{ year.spending_washer }}</td>
+                                <td>{{ year.spending_to }}</td>
+                                <td>{{ year.spending_lamp }}</td>
+                                <td>{{ year.spending_repair }}</td>
+                                <td>{{ year.spending_etc }}</td>
+                                <td style="font-weight: bold;">{{ year.spending }}</td>
+                                <td style="font-weight: bold;">{{ year.salary_payments }}</td>
+                                <td width="1" style="background: #dddddd;"></td>
+                                <td style="font-weight: bold; font-size: 14px;">{{ year.profit }}</td>
+                            </tr>
+                        {% endfor %}
+                    <tr>
+                        <td colspan="22" style="background: #dddddd;" height="1"></td>
+                    </tr>
+                        {% for date in date_chart %}
+                            <tr {% if date.current_month %} style="font-weight: bold; background: #dffffc; color: #4b4b4b;"{% endif %}>
+                                <td style="font-size: 14px;">{{ date.year }}</td>
+                                <td style="font-size: 14px;">{{ date.month|date:"F" }}</td>
+                                <td width="1" style="background: #dddddd;"></td>
+                                <td>{{ date.proceeds_corporate_bank }}</td>
+                                <td>{{ date.proceeds_terminal }}</td>
+                                <td>{{ date.proceeds_cash }}</td>
+                                <td style="font-weight: bold;">{{ date.all_money }}</td>
+                                <td width="1" style="background: #dddddd;"></td>
+                                <td>{{ date.spending_fuel_cash }}</td>
+                                <td>{{ date.spending_carwash }}</td>
+                                <td>{{ date.spending_carwash_bank }}</td>
+                                <td>{{ date.spending_parking }}</td>
+                                <td>{{ date.spending_washer }}</td>
+                                <td>{{ date.spending_to }}</td>
+                                <td>{{ date.spending_lamp }}</td>
+                                <td>{{ date.spending_repair }}</td>
+                                <td>{{ date.spending_etc }}</td>
+                                <td style="font-weight: bold;">{{ date.spending }}</td>
+                                <td style="font-weight: bold;">{{ date.salary_payments }}</td>
+                                <td width="1" style="background: #dddddd;"></td>
+                                <td style="font-weight: bold; font-size: 14px;">{{ date.profit }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    {% endspaceless %}
+    <script type="text/javascript">
+        {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+        $(document).ready(function () {
+                $("#SmenaTable").tablesorter({sortList: [[0, 0]]});
+            }
+        );
+        $('#example').popover(options)
+    </script>
+{% endblock %}

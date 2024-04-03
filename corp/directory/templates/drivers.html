@@ -1,0 +1,48 @@
+{% extends "base_directory.html" %}
+{% load staticfiles %}
+{% block title %}
+    Stat
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-condensed table-bordered small">
+                    <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>ФИО</th>
+                        <th>Телефон</th>
+                        <th>Марка машины</th>
+                        <th>Гос.номер</th>
+                        <th>Цвет машины</th>
+                        <th>На линии</th>
+                    </tr>
+                    </thead>
+                    {% for driver in driver_chart %}
+                        <tr {% if driver.online %}class="bg-success"{% endif %}>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ driver.fullname }}</td>
+                            <td>{{ driver.phone }}</td>
+                            <td>{{ driver.carmodel }}</td>
+                            <td>{{ driver.number }}</td>
+                            <td>{{ driver.color }}</td>
+                            {% if driver.online %}
+                                <td class="bg-success">+</td>
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% endspaceless %}
+    <script type="text/javascript">
+        {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+        $(document).ready(function () {
+                $("#DriverTable").tablesorter({sortList: [[5, 0]]});
+            }
+        );
+    </script>
+{% endblock %}

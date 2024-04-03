@@ -1,0 +1,574 @@
+﻿{% extends "base_infinity.html" %}
+{% load staticfiles %}
+{% block title %}
+    Хит-парад
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <!-- ХИТ-ПАРАД ONLINE DRIVERS + CX_TAXIACTIVE -->
+        <div class="row">
+            {% if grats_8_march %}
+                <div class="col-md-12" style="text-align: center"><img src="{% static '/images/8march.png' %}">
+                </div>{% endif %}
+            <div class="col-md-6">
+                <div class="text-center"><h4>На линии <span class="label label-info">{{ cars_online }}</span> Свободно
+                    <span
+                            class="label label-success">{{ cars_online_free }}</span> На заказе <span
+                            class="label label-primary">{{ cars_online_on_orders }}</span> Перерыв <span
+                            class="label label-warning">{{ cars_online_pause }}</span></h4></div>
+                {% if cars_online_list_without_stat_and_without_active or cars_online_list_without_stat_and_in_active %}
+                    <table class="table table-condensed table-bordered small table-hover">
+                        <thead>
+                        <tr>
+                            <th class="text-center">№</th>
+                            <th class="text-left"><span class="glyphicon glyphicon-plane"></span></th>
+                            <th class="text-left">
+                                <span class="glyphicon glyphicon-map-marker"></span>
+                            </th>
+                            <th class="text-left">ФИО</th>
+                            <th class="text-center">
+                                <nobr>Старт</nobr>
+                            </th>
+                            <th class="text-center">
+                                <nobr>Финиш</nobr>
+                            </th>
+                            <th class="text-center">
+                                <span class="glyphicon glyphicon-ok"></span>
+                            </th>
+                            <th class="text-center">
+                                <nobr>₽</nobr>
+                            </th>
+                        </tr>
+                        </thead>
+                        {% if cars_online_list_without_stat_and_without_active %}
+                            <tr>
+                                <td class="text-center danger text-danger" colspan="8">НИ ОДНОГО ЗАКАЗА СЕГОДНЯ</td>
+                            </tr>
+                            {% for car in cars_online_list_without_stat_and_without_active %}
+                                <tr onclick="document.location = 'driver/{{ car.idcurrentdriver.id }}';"
+                                    style="cursor: pointer"
+                                    class="active">
+                                    <td class="text-center">{{ forloop.counter }}</td>
+                                    <td class="text-left"><span
+                                            class="label {% if car.state == 2 %}label-success{% elif car.state == 3 or car.state == 7 %}label-primary{% elif car.state == 4 %}label-warning{% elif car.state == 5 %}label-danger{% endif %}">{{ car.callsign }}</span>
+                                        <span class="label label-default">{{ car.idmodel.name }}</span></td>
+                                    <td class="text-left"><span
+                                            class="label label-success">{{ car.idparking.name }}</span>
+                                    </td>
+                                    <td class="text-left">{{ car.idcurrentdriver.fullname }}</td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center">-</td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                        {% if cars_online_list_without_stat_and_in_active %}
+                            <tr>
+                                <td class="text-center warning text-danger" colspan="8">ПОЛУЧИЛИ ПЕРВЫЙ ЗАКАЗ СЕГОДНЯ</td>
+                            </tr>
+                            {% for car in cars_online_list_without_stat_and_in_active %}
+                                <tr onclick="document.location = 'driver/{{ car.idcurrentdriver.id }}';"
+                                    style="cursor: pointer"
+                                    class="active">
+                                    <td class="text-center">{{ forloop.counter }}</td>
+                                    <td class="text-left"><span
+                                            class="label {% if car.state == 2 %}label-success{% elif car.state == 3 or car.state == 7 %}label-primary{% elif car.state == 4 %}label-warning{% elif car.state == 5 %}label-danger{% endif %}">{{ car.callsign }}</span>
+                                        <span class="label label-default">{{ car.idmodel.name }}</span></td>
+                                    <td class="text-left"><span class="glyphicon glyphicon-share-alt"></span> <span
+                                            class="label label-primary">{{ car.destination_zone_name }}</span>
+                                    </td>
+                                    <td class="text-left">{{ car.idcurrentdriver.fullname }}</td>
+                                    <td class="text-center">
+                                        {{ car.starttime|date:"H" }}:{{ car.starttime|date:"i D" }}</td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center">{{ car.cost|floatformat }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </table>
+                {% endif %}
+                <!-- / ХИТ-ПАРАД -->
+                <!-- ИНФОРМАЦИЯ О БАГАНУТОМ ЗАКАЗЕ -->
+                {% if corporate_inn_bug %}
+                    <div class="panel panel-danger">
+                        <div class="panel-heading text-center"><h4>Внимание! БАГАНУТЫЙ ЗАКАЗ</h4></div>
+                        <div class="panel-body">
+                            <h4 class="text-warning">Зайдите в программу и выберите контрагента заново</h4>
+                        </div>
+                        <table class="table table-condensed table-bordered small table-striped">
+                            <tr>
+                                <th>№ Заказа</th>
+                                <th>Дата подачи</th>
+                                <th>Откуда</th>
+                                <th>Куда</th>
+                                <th>Сумма</th>
+
+                            </tr>
+                            {% for order in corporate_orders_bug_list %}
+                                <tr>
+                                    <td>{{ order.number }}</td>
+                                    <td>{{ order.deliverytime|date:"j N D H:i" }}</td>
+                                    <td>{{ order.deliverystr }}</td>
+                                    <td>{{ order.destinationstr }}</td>
+                                    <td>{{ order.cost|floatformat }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% endif %}
+                {% if corporate_orders_with_inn_but_cash_pay %}
+                    <div class="panel panel-danger">
+                        <div class="panel-heading text-center"><h4>Внимание! Корпоративные заказы, у которых
+                            НЕБЕЗНАЛИЧНЫЙ
+                            РАСЧЁТ</h4></div>
+                        <div class="panel-body">
+                            <h4 class="text-warning">Зайдите в программу и поставьте галочку "БЕЗНАЛ"</h4>
+                        </div>
+                        <table class="table table-condensed table-bordered small table-striped">
+                            <tr>
+                                <th>№ Заказа</th>
+                                <th>Контрагент</th>
+                                <th>Дата подачи</th>
+                                <th>Откуда</th>
+                                <th>Куда</th>
+                                <th>Сумма</th>
+                            </tr>
+                            {% for corporate in corporate_orders_with_inn_but_cash_pay %}
+                                <tr>
+                                    <td>{{ corporate.number }}</td>
+                                    <td>{{ corporate.name }}</td>
+                                    <td>{{ corporate.deliverytime|date:"j N D H:i" }}</td>
+                                    <td>{{ corporate.deliverystr }}</td>
+                                    <td>{{ corporate.destinationstr }}</td>
+                                    <td>{{ corporate.cost|floatformat }} ₽</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% endif %}
+                <!-- / ИНФОРМАЦИЯ О БАГАНУТОМ ЗАКАЗЕ -->
+                <!-- ONLINE ХИТ-ПАРАД CX_STATISTICS -->
+                <table class="table table-condensed table-bordered small table-hover" id="OnDriverTable">
+                    <thead>
+                    <tr style="cursor: pointer;">
+                        <th class="text-center"><span class="glyphicon glyphicon-cloud"></th>
+                        <th class="text-left"><span class="glyphicon glyphicon-plane"></span></th>
+                        <th class="text-left">
+                            <span class="glyphicon glyphicon-map-marker"></span>
+                        </th>
+                        <th class="text-left">ФИО</th>
+                        <th class="text-center">
+                            <nobr>Старт</nobr>
+                        </th>
+                        <th class="text-center">
+                            <nobr>Финиш</nobr>
+                        </th>
+                        <th class="text-center">
+                            <span class="glyphicon glyphicon-ok"></span>
+                        </th>
+                        <th class="text-center">
+                            ₽ (-1д)
+                        </th>
+                        <th class="text-center">
+                            ₽
+                        </th>
+                        <th class="text-center">
+                            ₽+
+                        </th>
+                    </tr>
+                    </thead>
+                    {% for driver_chart in final_driver_chart %}
+                        {% if driver_chart.online_status == 'on' %}
+                            <tr onclick="document.location = 'driver/{{ driver_chart.iddriver }}';"
+                                style="cursor: pointer; {% if not driver_chart.car %}opacity:.45{% endif %}"
+                                {% if driver_chart.summ_today_total < 3500 %}class="danger text-danger"
+                                {% elif driver_chart.summ_today_total >= 3500 and driver_chart.summ_today_total < 5500 %}class="warning"{% endif %}
+                                class="success">
+                                <td class="text-center"><span
+                                        class="label {% if driver_chart.online_status == 'on' %}label-info{% else %}label-default{% endif %}">{{ driver_chart.online_status }}</span>
+                                </td>
+                                <td class="text-left">
+                                    {% if driver_chart.car %}
+                                        <span class="label {% if driver_chart.car.state == 2 %}label-success{% elif driver_chart.car.state == 3 or driver_chart.car.state == 7 %}label-primary{% elif driver_chart.car.state == 4 %}label-warning{% elif driver_chart.car.state == 5 %}label-danger{% endif %}">{{ driver_chart.car.callsign }}</span>
+                                        <span class="label label-default">{{ driver_chart.carmodel }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-left">
+                                    {% if driver_chart.parking_name %}
+                                        <span class="label label-success">{{ driver_chart.parking_name }}</span>
+                                    {% endif %}
+                                    {% if driver_chart.destination_zone_name %}
+                                        <span class="glyphicon glyphicon-share-alt"></span> <span
+                                            class="label label-primary">{{ driver_chart.destination_zone_name }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-left">{{ driver_chart.fullname }}</td>
+                                <td class="text-center">
+                                    {{ driver_chart.firs_order|date:"H" }}:{{ driver_chart.firs_order|date:"i D" }}</td>
+                                <td class="text-center">
+                                    {{ driver_chart.last_order|date:"H" }}:{{ driver_chart.last_order|date:"i" }}</td>
+                                <td class="text-center">{{ driver_chart.countt_today }}
+                                    {% if driver_chart.summ|floatformat != driver_chart.summ_total|floatformat %}
+                                        +1{% endif %}</td>
+                                <td {% if driver_chart.summ_previous_day < 3500 %}class="danger text-danger"
+                                {% elif driver_chart.summ_previous_day >= 3500 and driver_chart.summ_previous_day < 5500 %}style="background: #fcf8e3" {% elif driver_chart.summ_previous_day >= 5500 %}style="background: #dff0d8" {% endif %}>{{ driver_chart.summ_previous_day|floatformat }}</td>
+                                <td>{{ driver_chart.summ_today|floatformat }}</td>
+                                <td><strong>{{ driver_chart.summ_today_total|floatformat }}</strong></td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+                <!-- / ХИТ-ПАРАД -->
+                <!-- OFFLINE ХИТ-ПАРАД CX_STATISTICS -->
+                <table class="table table-condensed table-bordered small table-hover" id="OffDriverTable">
+                    <thead>
+                    <tr style="cursor: pointer;">
+                        <th class="text-center"><span class="glyphicon glyphicon-cloud"></th>
+                        <th class="text-left"><span class="glyphicon glyphicon-plane"></span></th>
+                        <th class="text-left">
+                            <span class="glyphicon glyphicon-map-marker"></span>
+                        </th>
+                        <th class="text-left">ФИО</th>
+                        <th class="text-center">
+                            <nobr>Старт</nobr>
+                        </th>
+                        <th class="text-center">
+                            <nobr>Финиш</nobr>
+                        </th>
+                        <th class="text-center">
+                            <span class="glyphicon glyphicon-ok"></span>
+                        </th>
+                        <th class="text-center">
+                            ₽
+                        </th>
+                    </tr>
+                    </thead>
+                    {% for driver_chart in final_driver_offline_chart %}
+                        {% if driver_chart.online_status == 'off' %}
+                            <tr onclick="document.location = 'driver/{{ driver_chart.iddriver }}';"
+                                style="cursor: pointer; {% if not driver_chart.car %}opacity:.45{% endif %}"
+                                {% if driver_chart.summ < 3500 %}class="danger text-danger"
+                                {% elif driver_chart.summ >= 3500 and driver_chart.summ < 5500 %}class="warning"{% endif %}
+                                class="success">
+                                <td class="text-center"><span
+                                        class="label {% if driver_chart.online_status == 'on' %}label-info{% else %}label-default{% endif %}">{{ driver_chart.online_status }}</span>
+                                </td>
+                                <td class="text-left">
+                                    {% if driver_chart.car %}
+                                        <span class="label {% if driver_chart.car.state == 2 %}label-success{% elif driver_chart.car.state == 3 or driver_chart.car.state == 7 %}label-primary{% elif driver_chart.car.state == 4 %}label-warning{% elif driver_chart.car.state == 5 %}label-danger{% endif %}">{{ driver_chart.car.callsign }}</span>
+                                        <span class="label label-default">{{ driver_chart.carmodel }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-left">
+                                    {% if driver_chart.parking_name %}
+                                        <span class="label label-success">{{ driver_chart.parking_name }}</span>
+                                    {% endif %}
+                                    {% if driver_chart.destination_zone_name %}
+                                        <span class="glyphicon glyphicon-share-alt"></span> <span
+                                            class="label label-primary">{{ driver_chart.destination_zone_name }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-left">{{ driver_chart.fullname }}</td>
+                                <td class="text-center">
+                                    {{ driver_chart.firs_order|date:"H" }}:{{ driver_chart.firs_order|date:"i D" }}</td>
+                                <td class="text-center">
+                                    {{ driver_chart.last_order|date:"H" }}:{{ driver_chart.last_order|date:"i" }}</td>
+                                <td class="text-center">{{ driver_chart.countt }}</td>
+                                <td>{{ driver_chart.summ|floatformat }}{% if driver_chart.summ_active %}+
+                                    {{ driver_chart.summ_plus|floatformat }}=
+                                    <strong>{{ driver_chart.summ_total|floatformat }}</strong>{% endif %}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+            <!-- / OFFLINE ХИТ-ПАРАД -->
+            <!-- ЦЕНТР -->
+            <div class="col-md-3 text-center">
+                <h2>{{ current_day }}</h2>
+                <div class="well well-sm text-justify">
+                    <button type="button" onclick="window.open(self.location, '_self');" class="btn btn-primary btn-xs">
+                        ОБНОВИТЬ
+                    </button>
+                    &nbsp;<strong>Обновление через: <span id="timer"></span></strong>
+                </div>
+                <div class="row text-center">
+                    <div class="col-md-6">
+                        <div class="panel panel-success">
+                            <div class="panel-heading">
+                                <h4>Выполненные</h4>
+                            </div>
+                            <h4>{{ all_money_current_day|floatformat }} ₽</h4>
+                            <h4>{{ all_orders_current_day }} шт</h4>
+                            <table class="table table-bordered table-striped small">
+                                <tr>
+                                    <th colspan="3" class="text-center active">Расшифровка</th>
+                                </tr>
+                                <tr>
+                                    <td>нал</td>
+                                    <td>{{ all_money_cash|floatformat }}</td>
+                                    <td>{{ all_orders_cash }}</td>
+                                </tr>
+                                <tr>
+                                    <td>терминал</td>
+                                    <td>{{ all_money_terminal|floatformat }}</td>
+                                    <td>{{ all_orders_terminal }}</td>
+                                </tr>
+                                <tr>
+                                    <td>корп инн</td>
+                                    <td>{{ all_money_corp|floatformat }}</td>
+                                    <td>{{ all_orders_corp }}</td>
+                                </tr>
+                                <tr>
+                                    <td>корп</td>
+                                    <td>{{ all_money_corp_no_inn|floatformat }}</td>
+                                    <td>{{ all_orders_corp_no_inn }}</td>
+                                </tr>
+                                <tr>
+                                    <td>сайт</td>
+                                    <td>{{ all_money_site_pay|floatformat }}</td>
+                                    <td>{{ all_orders_site_pay }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4>Планируются</h4>
+                            </div>
+                            <h4>{{ plan_money_current_day|floatformat }} ₽</h4>
+                            <h4>{{ plan_orders_current_day|floatformat }} шт</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-info">
+                    <div class="panel-heading"><h4>Предварительные СЕГОДНЯ</h4></div>
+                    <div class="row">
+                        {% if pre_money_current_day %}
+                            <div class="col-md-6">
+                                <h4>{{ pre_money_current_day|floatformat }} ₽</h4>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>{{ pre_orders_current_day|floatformat }} шт</h4>
+                            </div>
+                        {% else %}
+                            <div class="col-md-12"><h4>заказы закончились</h4></div>
+                        {% endif %}
+                        <div class="col-md-12">
+                            <table class="table table-striped table-condensed">
+                                {% for interval in pre_intervals %}
+                                    {% if interval.money_today != None %}
+                                        <tr>
+                                            <td>{{ interval.start_h }} - {{ interval.finish_h }}</td>
+                                            <td>{{ interval.money_today|floatformat }} ₽</td>
+                                            <td>{{ interval.orders_today }} шт</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-warning">
+                    <div class="panel-heading"><h4>Сейчас</h4></div>
+                    <div class="row">
+                        {% if now_money_current_day %}
+                            <div class="col-md-6">
+                                <h4>{{ now_money_current_day|floatformat }} ₽</h4>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>{{ now_orders_current_day|floatformat }} шт</h4>
+                            </div>
+                        {% else %}
+                            <h4>все машины свободны</h4>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="panel panel-primary">
+                    <div class="panel-heading"><h4>Предварительные ЗАВТРА</h4></div>
+                    <div class="row">
+                        {% if pre_money_next_day %}
+                            <div class="col-md-6">
+                                <h4>{{ pre_money_next_day|floatformat }} ₽</h4>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>{{ pre_orders_next_day|floatformat }} шт</h4>
+                            </div>
+                        {% else %}
+                            <div class="col-md-12"><h4>заказы закончились</h4></div>
+                        {% endif %}
+                        <div class="col-md-12">
+                            <table class="table table-striped table-condensed">
+                                {% for interval in pre_intervals %}
+                                    {% if interval.money_nextday != None %}
+                                        <tr>
+                                            <td>{{ interval.start_h }} - {{ interval.finish_h }}</td>
+                                            <td>{{ interval.money_nextday|floatformat }} ₽</td>
+                                            <td>{{ interval.orders_nextday }} шт</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row text-center">
+                    <div class="col-md-12">
+                        <div class="panel panel-success">
+                            <div class="panel-heading">
+                                <h3>{{ previous_day|date:"d M Y, l" }}</h3>
+                            </div>
+                            <h4>{{ all_money_previous_day|floatformat }} ₽</h4>
+                            <h4>{{ all_orders_previous_day }} шт</h4>
+                            <table class="table table-bordered table-striped small">
+                                <tr>
+                                    <th colspan="3" class="text-center active">Расшифровка</th>
+                                </tr>
+                                <tr>
+                                    <td>нал</td>
+                                    <td>{{ all_money_cash_previous_day|floatformat }}</td>
+                                    <td>{{ all_orders_cash_previous_day }}</td>
+                                </tr>
+                                <tr>
+                                    <td>терминал</td>
+                                    <td>{{ all_money_terminal_previous_day|floatformat }}</td>
+                                    <td>{{ all_orders_terminal_previous_day }}</td>
+                                </tr>
+                                <tr>
+                                    <td>корп инн</td>
+                                    <td>{{ all_corp_money_previous_day|floatformat }}</td>
+                                    <td>{{ all_corp_orders_previous_day }}</td>
+                                </tr>
+                                <tr>
+                                    <td>корп</td>
+                                    <td>{{ all_corp_money_previous_day_no_inn|floatformat }}</td>
+                                    <td>{{ all_corp_orders_previous_day_no_inn }}</td>
+                                </tr>
+                                <tr>
+                                    <td>сайт</td>
+                                    <td>{{ all_money_site_pay_previous_day|floatformat }}</td>
+                                    <td>{{ all_orders_site_pay_previous_day }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- SMS Срез последних -->
+            <div class="col-md-3">
+                <div class="text-center"><h4>СМС (последние 5 шт)</h4></div>
+                <table class="table table-condensed table-bordered small table-hover table-striped" id="SmsTable">
+                    <thead>
+                    <tr style="cursor: pointer">
+                        <th class="text-center"><span class="glyphicon glyphicon-time"></span></th>
+                        <th class="text-center"><span class="glyphicon glyphicon-phone-alt"></span></th>
+                        <th class="text-center">Текст</th>
+                        <th class="text-center"><span class="glyphicon glyphicon-ok"></span></th>
+                    </tr>
+                    </thead>
+                    {% for sms in sms_chart %}
+                    <tr>
+                        <td style="text-align: center; white-space: nowrap;">{{ sms.datetime_t }}</td>
+                        <td style="text-align: center; white-space: nowrap;">+{{ sms.number }}</td>
+                        <td>{{ sms.textsms }}</td>
+                        <td style="text-align: center; white-space: nowrap;">{% if sms.sms_state == 1 %}<span style="color: white;" class="label label-warning"><span class="glyphicon glyphicon-send"></span></span>
+                            {% elif sms.sms_state == 2 %}<span style="color: white;" class="label label-success">ОК</span>
+                            {% elif sms.sms_state == 3 %}<span style="color: white;" class="label label-danger"><span class="glyphicon glyphicon-remove"></span></span>
+                            {% elif sms.sms_state == 4 %}<span style="color: white;" class="label label-warning"><span class="glyphicon glyphicon-send"></span></span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <!-- start ХИТ-ПАРАД Новые Киенты -->
+            <div class="col-md-3">
+                <div class="text-center"><h4>Новые клиенты</h4></div>
+                <table class="table table-condensed table-bordered small table-hover table-striped" id="NewClients">
+                    <thead>
+                    <tr style="cursor: pointer">
+                        <th class="text-center">Сегодня</th>
+                        <th class="text-center">ВСЕГО&nbsp;-&nbsp;{{ current_day|date:"F Y" }}</th>
+                        <th class="text-center">ПУЛКОВО&nbsp;-&nbsp;{{ current_day|date:"F Y" }}</th>
+                    </tr>
+                    </thead>
+                            <tr>
+                                <td class="text-center">{{ today_new_clients }}</td>
+                                <td class="text-center">{{ last_month_new_clients }}</td>
+                                <td class="text-center">{{ last_month_new_clients_pulkovo }}</td>
+                            </tr>
+                </table>
+            </div>
+            <!-- end ХИТ-ПАРАД Новые Киенты -->
+            <!-- ХИТ-ПАРАД КОРП -->
+            <div class="col-md-3">
+                <div class="text-center"><h4>Корпоративные клиенты (ИНН)</h4></div>
+                <table class="table table-condensed table-bordered small table-hover table-striped" id="CorpTable">
+                    <thead>
+                    <tr style="cursor: pointer">
+                        <th class="text-center"><span class="glyphicon glyphicon-plane"></span></th>
+                        <th class="text-center"><span class="glyphicon glyphicon-calendar"></span></th>
+                        <th>Итого</th>
+                        <th class="text-center">
+                            <nobr>{{ all_corp_orders_current_day }} шт</nobr>
+                        </th>
+                        <th class="text-center">
+                            <nobr>{{ all_corp_money_current_day|floatformat }} ₽</nobr>
+                        </th>
+                    </tr>
+                    </thead>
+                    {% for corporate_chart in final_corporate_chart %}
+                        {% if corporate_chart %}
+                            <tr onclick="document.location = 'corp/{{ corporate_chart.idcorporate }}';" style="cursor: pointer; {% if corporate_chart.corporate_inn_bug %}background: red; color: white;{% endif %}">
+                                <td class="text-center">{% if corporate_chart.active_count %}<span class="label label-success">{{ corporate_chart.active_count }}</span>{% else %}&nbsp;{% endif %}</td>
+                                <td class="text-center">{% if corporate_chart.pre_count %}<span class="label label-info">{{ corporate_chart.pre_count }}</span>{% else %}&nbsp;{% endif %}</td>
+                                <td>{{ corporate_chart.name }}</td>
+                                <td class="text-center">{{ corporate_chart.count }}</td>
+                                <td class="text-center">{{ corporate_chart.sum|floatformat }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+                <div class="text-center"><h4>Корпоративные клиенты (без ИНН)</h4></div>
+                <table class="table table-condensed table-bordered small table-hover table-striped" id="CorpTable">
+                    <thead>
+                    <tr onclick="document.location = 'corp/{{ corporate_chart.idcorporate }}';" style="cursor: pointer">
+                        <th>Итого</th>
+                        <th class="text-center">
+                            <nobr>{{ all_corp_orders_current_day_no_inn }} шт</nobr>
+                        </th>
+                        <th class="text-center">
+                            <nobr>{{ all_corp_money_current_day_no_inn|floatformat }} ₽</nobr>
+                        </th>
+                    </tr>
+                    </thead>
+                    {% for corporate_chart in final_corporate_chart_no_inn %}
+                        {% if corporate_chart %}
+                            <tr style="cursor: pointer; {% if corporate_chart.corporate_inn_bug %}background: red; color: white;{% endif %}">
+                                <td>
+                                    {{ corporate_chart.name }}
+                                </td>
+                                <td class="text-center">{{ corporate_chart.count }}</td>
+                                <td class="text-center">{{ corporate_chart.sum|floatformat }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+            <!-- / ХИТ-ПАРАД КОРП -->
+
+        </div>
+    {% endspaceless %}
+    <script type="text/javascript">
+        {#Запуск функции таймера для обновления страницы из timer.js#}
+        refresh();
+        {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+        $(document).ready(function () {
+                $("#OnDriverTable").tablesorter({sortList: [[9, 0]]});
+                $("#OffDriverTable").tablesorter({sortList: [[0, 0]]});
+                $("#CorpTable").tablesorter({sortList: [[2, 0]]});
+            }
+        );
+    </script>
+{% endblock %}

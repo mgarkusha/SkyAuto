@@ -1,0 +1,60 @@
+{% extends "base_directory.html" %}
+{% load staticfiles %}
+{% block title %}
+    Stat
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-condensed table-bordered small" id="CarTable1">
+                    <thead>
+                    <tr style="cursor: pointer;">
+                        <th>№</th>
+                        <th>Позывной</th>
+                        <th>Гос.номер</th>
+                        <th>Марка</th>
+                        <th>Цвет</th>
+                        <th>Год</th>
+                        <th>Пробег,км</th>
+                        <th>Текущее местоположение</th>
+                        <th>Будущее местоположение</th>
+                        <th>Текущий водитель</th>
+                        <th>Текущий статус</th>
+                        <th>Длительность статуса</th>
+                        <th>Выход на линию</th>
+                        <th>Длительность работы</th>
+                        <th>Время отключения</th>
+                    </tr>
+                    </thead>
+                    {% for car in cars_chart %}
+                        <tr {% if car.online %}class="bg-success"{% endif %}>
+                            <td class="text-center">{{ forloop.counter }}</td>
+                            <td class="text-center">{{ car.callsign }}</td>
+                            <td>{{ car.number }}</td>
+                            <td>{{ car.idmodel.name }}</td>
+                            <td class="text-center">{{ car.idcolor.name }}</td>
+                            <td class="text-center">{{ car.age }}</td>
+                            <td>{{ car.run }}</td>
+                            <td>{% if car.online %}<span class="label label-default">{{ car.idparking.name }}</span></h5>{% else %}-{% endif %}</td>
+                            <td>{% if car.online %}<span class="label label-default">{{ car.destination_zone_name }}</span></h5>{% else %}-{% endif %}</td>
+                            <td>{{ car.idcurrentdriver.fullname }}</td>
+                            <td class="text-center"><span class="label {% if car.state == 2 %}label-success{% elif car.state == 1 %}label-default{% elif car.state == 3 or car.state == 7 %}label-primary{% elif car.state == 4 %}label-warning{% elif car.state == 5 %}label-danger{% endif %}">{{ car.state_rus }}</span></h5></td>
+                            <td>{{ car.status_time }}</td>
+                            <td>{{ car.start_online_time }}</td>
+                            <td>{{ car.online_time }}</td>
+                            <td>{{ car.end_online_time }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% endspaceless %}
+    <script type="text/javascript">
+        {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+        $(document).ready(function () {
+                $("#CarTable1").tablesorter({sortList: [[0, 0]]});
+            }
+        );
+    </script>
+{% endblock %}

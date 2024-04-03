@@ -1,0 +1,103 @@
+{% extends "base_ats.html" %}
+{% load staticfiles %}
+{% block title %}
+    Stat
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <div class="row">
+            <div class="col-md-9">
+                <table class="table table-condensed table-bordered" style="font-size: 25px;">
+                    <thead>
+                    <tr style="cursor: pointer;">
+                        <th style="text-align: center;">Дата</th>
+                        <th style="text-align: center;">Время</th>
+                        <th style="text-align: center;">Телефон, клиент</th>
+                        <th style="text-align: center;">Сообщение</th>
+                        <th style="text-align: center;">Статус</th>
+                    </tr>
+                    </thead>
+                    {% for sms in sms_chart reversed %}
+                        <tr>
+                            <td style="text-align: center; white-space: nowrap;">{{ sms.datetime_d }}</td>
+                            <td style="text-align: center;">{{ sms.datetime_t }}</td>
+                            <td><strong>+{{ sms.number }}</strong><br><span class="label label-info">{{ sms.client_name.name }}</span></td>
+                            <td>{{ sms.textsms }}</td>
+                            <td><span class="label {% if sms.state == 'Доставлено' %}label-success
+                            {% elif sms.state == 'Ошибка' %}label-danger
+                            {% elif sms.state == 'Отправлено' %}label-primary
+                            {% elif sms.state == 'В очереди' %}label-default
+                            {% endif %}">{{ sms.state }}</span><br><span class="label label-warning">{{ sms.errorcode }}</span></td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="col-md-3">
+                <div class="well well-sm text-justify">
+                    <button type="button" onclick="window.open(self.location, '_self');" class="btn btn-primary btn-xs">
+                        ОБНОВИТЬ
+                    </button>
+                    &nbsp;<strong>Обновление через: <span id="timer"></span></strong>
+                </div>
+                <h2>Архив СМС</h2>
+                <table class="table table-condensed table-bordered small table-striped table-hover" id="CarTable">
+                <thead>
+                <tr style="background: #E2FADB;">
+                    <th>Дата</th>
+                    <th>Кол-во смс, шт</th>
+                </tr>
+                </thead>
+                {% for day in day_chart %}
+                <tr onclick="document.location = '/ats/sms/{{ day.date|date:"Y" }}/{{ day.date|date:"m" }}/{{ day.date|date:"j" }}';" style="cursor: pointer; {% if day.current_day %}background: #99f6e7;{% endif %}">
+                    <td>{{ day.date|date:"d M Y" }}</td>
+                    <td>{{ day.cnt }}</td>
+                </tr>
+                 {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% endspaceless %}
+    <script type="text/javascript">
+        // выставляем секунды
+        var sec = 0;
+        // выставляем минуты
+        var min = 2;
+
+        function refresh_sms() {
+            sec--;
+            if (sec == -01) {
+                sec = 59;
+                min = min - 1;
+            }
+            else {
+                min = min;
+            }
+            if (sec <= 9) {
+                sec = "0" + sec;
+            }
+            time = (min <= 9 ? "0" + min : min) + ":" + sec;
+            if (document.getElementById) {
+                timer.innerHTML = time;
+            }
+            inter = setTimeout("refresh_sms()", 1000);
+            // действие, если таймер 00:00
+            if (min == '00' && sec == '00') {
+                sec = "00";
+                clearInterval(inter);
+                /* выводим сообщение в элемент с id="tut", например <div id="tut"></div> */
+                /* timer1.innerHTML="Время истекло!"; */
+
+                /* либо модальное окно */
+                //alert('Таймер завершил свою работу!');
+
+                /* либо переход на какой-то адрес */
+                //window.location='http://www.net-f.ru/';
+                window.open(self.location, '_self');
+
+                /* либо любой другой Ваш код */
+            }
+        }
+
+        refresh_sms();
+    </script>
+{% endblock %}

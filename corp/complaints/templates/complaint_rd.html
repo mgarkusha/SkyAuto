@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block title %}
+    Главная страница
+{% endblock %}
+{% block content %}
+    <!--{% if user.groups.all.0.name == 'Администратор' %}<h1>test1</h1>{% endif %}-->
+    <div class="row">
+        {% if archive_active %}
+            <div class="col-md-12">
+            <h3>Таблица "Архив жалоб"{% else %}
+            <div class="col-md-8"><h3>Таблица "Жалобы на рассмотрении"{% endif %}</h3>
+        {% if complaint_filter %}
+            <p>
+                <strong>Фильтр: </strong>
+                <a class="btn btn-warning btn-xs" href="/">
+                    <span class="glyphicon glyphicon-remove-sign"></span> {{ filter_driver_name.fullname }}
+                </a>
+                <a class="btn btn-warning btn-xs" href="/">
+                    <span class="glyphicon glyphicon-remove-sign"></span> {{ filter_month_name|date:"F Y" }}
+                </a>
+            </p>
+        {% endif %}
+        <div class="table-responsive">
+            <table class="table table-striped table-condensed">
+                <tr>
+                    <th>№</th>
+                    <th>Дата подачи жалобы</th>
+                    <th>Диспетчер</th>
+                    <th>Водитель</th>
+                    <th>Номер машины</th>
+                    <th>Текст жалобы</th>
+                    {% if archive_active %}
+                        <th style="background: #fff2af">Дата рассмотрения жалобы</th>
+                        <th style="background: #fff2af">Ответ руководителя</th>
+                        <th style="background: #fff2af">Результат рассмотрения</th>{% endif %}
+                    <th>Статус жалобы</th>
+                    {% if user.groups.all.0.name == 'Администратор' %}
+                        <th>Действия</th>{% endif %}
+                </tr>
+                {% for i in complaint_rd %}
+                    {% if complaint_filter and i.complaint_status_id == 3 %}
+                        <tr class="warning">{% else %}
+                        <tr>{% endif %}
+                <td>{{ i.complaint_number }}</td>
+                <td nowrap>{{ i.complaint_date|date:"D, d.m.Y G:i" }}</td>
+                <td>{{ i.operator_name }}</td>
+                {#                <td>{{ i.operator_name.get_full_name }}</td>#}
+                <td>{{ i.get_driver_name }}</td>
+                <td>{{ i.get_car_number }}</td>
+                <td>{{ i.complaint_text }}</td>
+                {% if archive_active %}
+                    <td style="background: #fff2af">{{ i.complaint_date_close }}</td>
+                    <td style="background: #fff2af">{{ i.complaint_answer }}</td>
+                    <td style="background: #fff2af">{% if i.complaint_penalty > 0 %}
+                        <span style="color: #b30d0e; font-weight: bold">Штраф:&nbsp;{{ i.complaint_penalty }}</span>{% else %}
+                        Выговор{% endif %}</td>{% endif %}
+                <td>{{ i.complaint_status.complaint_status_text }}</td>
+                {% if user.groups.all.0.name == 'Администратор' %}
+                    <td>
+                        {% if user.is_authenticated %}
+                            {% if not archive_active and i.complaint_status_id != 3 or complaint_filter and i.complaint_status_id != 3 %}
+                                <a href="/complaint_manager/{{ i.id }}" class="btn btn-info btn-block btn-sm"
+                                   type="submit">Рассмотреть</a>
+                            {% endif %}
+                            {#                            <a href="/complaint_update/{{ i.id }}" class="btn btn-primary btn-block btn-sm" type="submit">Изменить</a>#}
+                            {% if archive_active or complaint_filter and i.complaint_status_id == 3 %}
+                                <a href="/complaint_manager/{{ i.id }}" class="btn btn-primary btn-block btn-sm"
+                                   type="submit">Изменить</a>
+                                <a href="/complaint_delete/{{ i.id }}" class="btn btn-danger btn-block btn-sm"
+                                   onclick="return confirmDelete({{ i.complaint_number }}, '{{ i.complaint_date }}')"
+                                   type="submit">Удалить</a>
+                                {#                        {% elif not i.complaint_status_id == 3 %}#}
+                                {#                                <a href="/complaint_archive/{{ i.id }}" class="btn btn-warning btn-block btn-sm" type="submit"><span#}
+                                {#                                        class="glyphicon glyphicon-book"></span> В архив</a>#}
+                            {% endif %}
+                        {% endif %}
+                    </td>{% endif %}
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        </div>
+        {% if not archive_active %}
+            <div class="col-md-4"><h3>{{ current_month|date:"F Y" }} | <span
+                    style="font-size: 20px; color: #a25500;">Жалоб: {{ count_current_month }} шт</span></h3>
+                <table class="table table-condensed table-bordered small table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>ФИО</th>
+                        <th style="text-align: center">Открыто</th>
+                        <th style="text-align: center">Закрыто</th>
+                        <th style="text-align: center">Всего</th>
+                    </tr>
+                    </thead>
+                    {% for i in driver_chart %}
+                        <tr onclick="document.location = '/complaint/{{ i.complaint_date }}/{{ i.driver_id }}';"
+                            style="cursor: pointer; {% if i.complaint_filter %}background: #feff07;{% endif %}">
+                            <td>{{ i.fullname }}</td>
+                            <td align="center"
+                                style="{% if i.complaints_count_sent > 0 %}background: #f5e79e; {% endif %}font-weight: bold;">{{ i.complaints_count_sent }}</td>
+                            <td align="center"
+                                style="{% if i.complaints_count_closed %}background: #ccf0b9; {% endif %}font-weight: bold;">{{ i.complaints_count_closed }}</td>
+                            <td align="center"
+                                style="background: #5cc4ef; font-weight: bold;">{{ i.complaints_count_all }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                <h3>{{ previous_month|date:"F Y" }} | <span
+                        style="font-size: 20px; color: #a25500;">Жалоб: {{ count_previous_month }} шт</span>
+                </h3>
+                <table class="table table-condensed table-bordered small table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>ФИО</th>
+                        <th style="text-align: center">Открыто</th>
+                        <th style="text-align: center">Закрыто</th>
+                        <th style="text-align: center">Всего</th>
+                    </tr>
+                    </thead>
+                    {% for i in driver_chart_previous_month %}
+                        <tr onclick="document.location = '/complaint/{{ i.complaint_date }}/{{ i.driver_id }}';"
+                            style="cursor: pointer; {% if i.complaint_filter %}background: #feff07;{% endif %}">
+                            <td>{{ i.fullname }}</td>
+                            <td align="center" style="{% if i.complaints_count_sent > 0 %}background: #f5e79e; {% endif %}font-weight: bold;">{{ i.complaints_count_sent }}</td>
+                            <td align="center" style="{% if i.complaints_count_closed %}background: #ccf0b9; {% endif %}font-weight: bold;">{{ i.complaints_count_closed }}</td>
+                            <td align="center" style="background: #5cc4ef; font-weight: bold;">{{ i.complaints_count_all }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endif %}
+        </div>
+{% endblock %}

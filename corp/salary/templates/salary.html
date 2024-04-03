@@ -1,0 +1,242 @@
+{% extends "base_salary.html" %}
+{% load staticfiles %}
+{% block title %}
+    ЗП
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+            <div class="row">
+                <div class="col-md-7">
+                    <table class="table table-condensed table-bordered table-striped table-hover" id="SalaryChartTable">
+                        <thead>
+                        <tr style="background: #E2FADB">
+                            <th class="text-center" style="vertical-align: center" width="150">ФИО</th>
+                            <th style="vertical-align: center">
+                                {% if marker_salary_last_month %}
+                                    <a href="/salary/create/" class="btn bg-info">Сформировать
+                                        ЗП<br>{{ name_last_month|date:"F Y" }}<br>Осталось
+                                        <span class="label label-primary">{{ driver_list_id_without_salary_count }}</span>
+                                        чел</a>
+                                {% endif %}
+                                {% for fund in fund_chart %}
+                                    <div class="btn-group">
+                                        <div style="padding: 1px; margin-right: 2px; border: none">
+                                            <table class="text-center table-bordered small"
+                                                   style="border-width: 3px; width: 240px;">
+                                                <tr>
+                                                    <td colspan="3" class="bg-info"
+                                                        style="font-size: 15px; font-weight: bold">
+                                                        {{ fund.date|date:" Y F " }}
+                                                        {% if marker_salary_current_month and forloop.first %}
+                                                            <span class="text-warning" style="font-size: 10px">[формируется]</span>{% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td rowspan="5" style="padding: 5px">Фонд
+                                                        ЗП<br><span
+                                                                class="label label-success"
+                                                                style="font-size: 12px;">{{ fund.salary_fund }}</span><br>Выплачено:<br>
+                                                        <span
+                                                                class="label label-primary"
+                                                                style="font-size: 12px;">{{ fund.salary_paid_out }}</span><br>Осталось
+                                                        выпл:<br><span
+                                                                class="label label-warning"
+                                                                style="font-size: 12px;">{{ fund.salary_unpaid }}</span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 5px">Все</td>
+                                                    <td style="padding: 5px">{{ fund.salary_nal_term_corp }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 5px">Стойка</td>
+                                                    <td style="padding: 5px">{{ fund.salary_airport }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 5px">Бензин</td>
+                                                    <td style="padding: 5px">{{ fund.fuel_bonus }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 5px">Доплата</td>
+                                                    <td style="padding: 5px">{{ fund.salary_add }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </th>
+
+                        </tr>
+                        </thead>
+                        {% for driver in driver_chart %}
+                            <tr {% if driver.operator_marker %} style="background: #fffce7"{% endif %}>
+                                <td>{% if driver.operator_marker %}<span class="label label-default" style="font-size: 14px">Диспетчер</span>{% endif %}
+                                    <h5>
+                                        {% for name in driver.fullname %}
+                                            {% if name == 'я' %}
+                                                <strong style="background: red">Больше не работает?</strong>
+                                                <br>
+                                                <span style="background: yellow">Попросите дистетчеров<br>"заблокировать" в программе!<br></span>
+                                            {% endif %}
+                                            <!-- Диспетчер -->
+                                            {% if name == 'яя' %}
+                                                <!-- скрываем "яя" -->
+                                                {% if forloop.first %}<div style="display: none">{% endif %}
+                                                {% if forloop.first %}</div>{% endif %}
+                                            <!-- /Диспетчер -->
+                                            {% else %}
+                                                {% if forloop.first %}<strong style="font-size: 23px">{% endif %}
+                                                {% if driver.operator_marker %}<strong style="font-size: 18px">{% endif %}{{ name }}
+                                                {% if driver.operator_marker %}</strong>{% endif %}
+                                                {% if forloop.first %}</strong>&nbsp;{% endif %}
+                                                <br>
+                                            {% endif %}
+                                        {% endfor %}<a name="{{ driver.driver_id }}" style="position: relative; bottom: 120px; font-size: 1px;">&nbsp;</a>
+                                    </h5>
+                                </td>
+                                <td>
+                                    {% if not driver.salary_marker and marker_salary_current_month %}
+                                        <div style="display: inline-block; width: 242px">&nbsp;</div>{% endif %}
+                                    {% for salary in driver.salary_chart %}
+                                        <div class="btn-group">
+                                            <a href="/salary/{{ salary.driver_id }}/{{ salary.salary_id }}"
+                                               class="btn btn-default"
+                                               style="padding: 1px; margin-right: 2px; border: none">
+                                                <table class="text-center table-bordered" style="width: 240px">
+                                                    <tr>
+                                                        <td colspan="5" class="bg-info"
+                                                            style="font-size: 17px; font-weight: bold">
+                                                            {{ salary.salary_date|date:" Y F " }}{% if salary.payment %}
+                                                                &nbsp;<span
+                                                                        class="label label-success"
+                                                                        style="font-size: 10px;">ВЫПЛАЧЕНО</span>{% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    {#                                                    <tr style="background: #9acfea">#}
+                                                    {#                                                        <td style="padding: 2px;">Все</td>#}
+                                                    {#                                                        <td style="padding: 2px;">Стойка</td>#}
+                                                    {#                                                        <td style="padding: 2px;">Бензин</td>#}
+                                                    {#                                                        <td style="padding: 2px;">Доплата</td>#}
+                                                    {#                                                    </tr>#}
+                                                    {#                                                    <tr style="background: #9acfea; color: #f5e79e">#}
+                                                    {#                                                        <td style="font-weight: bold; padding: 3px">{{ salary.salary_sum }}#}
+                                                    {#                                                        </td>#}
+                                                    {#                                                        <td style="font-weight: bold; padding: 3px">{{ salary.salary_sum_stoyka }}#}
+                                                    {#                                                        </td>#}
+                                                    {#                                                        <td style="font-weight: bold; padding: 3px">{{ salary.fuel_bonus }}#}
+                                                    {#                                                        </td>#}
+                                                    {#                                                        <td style="font-weight: bold; padding: 3px">{{ salary.salary_add }}#}
+                                                    {#                                                        </td>#}
+                                                    {#                                                    </tr>#}
+                                                    <tr {% if salary.payment %}style="opacity: .30;"{% endif %}>
+                                                        <td style="padding: 2px; background: #2e6da4; color: white; width: 80px;">
+                                                            Выпл
+                                                        </td>
+                                                        <td colspan="2"
+                                                            style="padding: 2px; background: #5cb85c; color: white; width: 80px;">
+                                                            Начисл
+                                                        </td>
+                                                        <td style="padding: 2px; background: #eb9316; color: white; width: 80px;">
+                                                            Долг
+                                                        </td>
+                                                    </tr>
+                                                    <tr {% if salary.payment %}style="opacity: .35;"{% endif %}>
+                                                        <td style="background: #2e6da4; color: white; font-size: 20px; padding: 3px; font-weight: bold;">{{ salary.pay_sum }}</td>
+                                                        <td colspan="2"
+                                                            style="background: #5cb85c; color: white; padding: 3px; font-size: 20px; font-weight: bold;">{{ salary.salary_total }}</td>
+                                                        <td style="padding: 2px; background: #eb9316; color: white; font-size: 20px; font-weight: bold;">{{ salary.debt_sum }}</td>
+                                                    </tr>
+                                                </table>
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    <p class="text-danger">Отключенные водители:
+                        {% for driver_name in driver_list_my_block_names %}{{ driver_name }}, {% endfor %}</p>
+                </div>
+                <div class="col-md-5">
+                    <table class="table table-condensed table-bordered table-striped table-hover small" id="RightTable">
+                        <thead>
+                        <tr style="cursor: pointer; background: #E2FADB;" class="text-nowrap">
+                            <th class="text-center bg-info" style="font-size: 14px; width: 25%">
+                                <span style="display: inline-block;">
+                                    <a href="/salary/refresh/" class="btn btn-info"><span
+                                            class="glyphicon glyphicon-refresh"></span></a>
+                                    <span style="font-size: 17px; font-weight: bold; padding-left: 5px;">{{ current_day|date:"F Y" }}</span>
+                            </th>
+                            <th style="width: 10%" class="text-center bg-info"><span
+                                    style="font-size: 17px; font-weight: bold;">{{ salary_fund_current_month }}</span>
+                            </th>
+                            <th style="width: 5%">Аванс</th>
+                            <th style="width: 10%">Выпл-но, ₽</th>
+                            <th style="width: 10%">Коэф:<span
+                                    class="label label-warning" style="font-size: 11px;">{{ discount }}</span><br>Заказы,
+                                ₽
+                            </th>
+                            <th style="width: 10%">Коэф:<span
+                                    class="label label-warning" style="font-size: 11px;">{{ discount_small }}</span><br>Стойка,
+                                ₽
+                            </th>
+                            <th style="width: 10%">Пробег/10-Л</th>
+                            <th style="width: 10%">Коэф:<span
+                                    class="label label-warning" style="font-size: 11px;">{{ fuel_rate }}</span><br>Бензин,
+                                ₽
+                            </th>
+                        </tr>
+                        </thead>
+                        {% for driver in driver_chart %}
+                            <tr {% if driver.operator_marker %} style="background: #fffce7"{% endif %}>
+                                <td>{% if driver.operator_marker %}<span class="label label-default" style="font-size: 10px">Дисп</span><br>{% endif %}
+                                    <nobr>
+                                        {% for name in driver.fullname_small %}
+                                            <!-- Диспетчер -->
+                                            {% if name == 'яя' %}
+                                                <!-- скрываем "яя" -->
+                                                {% if forloop.first %}<div style="display: none">{% endif %}
+                                                {% if forloop.first %}</div>{% endif %}
+                                            <!-- /Диспетчер -->
+                                            {% else %}
+                                        {% if forloop.first %}<strong style="font-size: 15px">{% endif %}
+                                        {% if driver.operator_marker %}<strong style="font-size: 14px">{% endif %}{{ name }}&nbsp;{% if driver.operator_marker %}</strong>{% endif %}
+                                            {% if forloop.first %}</strong>&nbsp;{% endif %}
+                                            {% endif %}
+                                    {% endfor %}</nobr>
+                                </td>
+                                <td class="label-success"
+                                    style="color: white; font-size: 15px">{{ driver.salary_total }}</td>
+                                <td style="text-align: center;"><a href="/salary/create/{{ driver.driver_id }}"
+                                                                   class="btn {% if driver.salary_marker %}btn-success disabled{% else %}btn-primary{% endif %}">
+                                    {% if driver.salary_marker %}<span class="glyphicon glyphicon-ok"></span>
+                                        &nbsp;{% endif %}Аванс</a></td>
+                                <td>{{ driver.pay_sum }}</td>
+                                <td style="font-weight: bold; padding: 5px">{{ driver.salary_sum }}</td>
+                                <td style="font-weight: bold; padding: 5px">{{ driver.salary_sum_stoyka }}</td>
+                                <td style="padding: 5px">{{ driver.fuel|floatformat }}</td>
+                                <td style="font-weight: bold; padding: 5px">{{ driver.fuel_bonus }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+            <script type="text/javascript">
+                {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+                {#$(document).ready(function () {#}
+                        {#$("#SalaryChartTable").tablesorter({sortList: [[0, -1]]});#}
+                {#        $("#RightTable").tablesorter({sortList: [[0, -1]]});#}
+                {#    }#}
+                {#);#}
+
+                $(function () {
+                    $(".custom-close").on('click', function () {
+                        $('#myModal').modal('hide');
+                    });
+                });
+            </script>
+        {% endif %}
+    {% endspaceless %}
+{% endblock %}

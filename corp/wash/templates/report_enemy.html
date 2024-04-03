@@ -1,0 +1,92 @@
+{% extends "base_wash.html" %}
+{% load staticfiles %}
+{% block title %}
+    Мойка
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+        {% endif %}
+        <div class="row">
+        <div class="col-md-2">
+            <table class="table table-condensed table-bordered small table-striped table-hover">
+                <thead>
+                <tr style="background: #E2FADB;">
+                    <th>Год</th>
+                    <th>Мес</th>
+                    <th>шт</th>
+                    <th>₽</th>
+                </tr>
+                </thead>
+                {% for date in date_chart %}
+                    <tr onclick="document.location = '/wash/report_enemy/{{ date.year }}/{{ date.month|date:"m" }}';"
+                        style="cursor: pointer;">
+                        <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.year }}</td>
+                        <td {% if date.current_month %}class="bg-primary"{% endif %}>
+                            {{ date.month|date:"F" }}</td>
+                        <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.all_park_orders }}</td>
+                        <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.all_park_money }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-md-2">
+            <table class="table table-condensed table-bordered small table-hover table-striped" id="ParkTable">
+                <thead>
+                <tr style="cursor: pointer; background: #E2FADB;">
+                    <th>Номер авто</th>
+                    <th class="text-center">
+                        <nobr>шт</nobr>
+                    </th>
+                    <th class="text-center">
+                        <nobr>₽</nobr>
+                    </th>
+                </tr>
+                </thead>
+                {% for car in park_chart %}
+                        <tr {% if car.car_number %}onclick="document.location = '/wash/report_enemy/{{ in_year }}/{{ in_month }}/{{ car.car_number }}';" style="cursor: pointer;"{% endif %}>
+                            <td {% if car.current_car %}class="bg-primary"{% endif %}>{% if car.car_number %}{{ car.car_number }}{% else %}Без номера{% endif %}</td>
+                            <td class="text-center {% if car.current_car %}bg-primary{% endif %}">{{ car.count }}</td>
+                            <td class="text-center {% if car.current_car %}bg-primary{% endif %}">{{ car.sum|floatformat }}</td>
+                        </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-md-8">
+        <table class="table table-condensed table-bordered small table-striped table-hover" id="CarTable">
+                <thead>
+                <tr style="background: #E2FADB;">
+                            <th style="text-align: center;"><span class="glyphicon glyphicon-calendar"></span></th>
+                            <th style="text-align: center;"><span class="glyphicon glyphicon-time">&nbsp;мин</span></th>
+                            <th style="text-align: center;">Тип</th>
+                            {% if not car_number %}<th style="text-align: center;">Номер</th>{% endif %}
+                            {% if car_number %}<th style="text-align: center;">Услуга</th>{% endif %}
+                            <th style="text-align: center;">Доп</th>
+                            {% if car_number %}<th style="text-align: center;">Комментарий</th>{% endif %}
+                            <th style="text-align: center;">₽</th>
+                        </tr>
+                        </thead>
+                        {% for order in order_chart %}
+                            <tr {% if order.selected %}style="background: #e7edad;" {% endif %}>
+                                <td>{{ order.dt|date:"d M H:i" }}</td>
+                                <td>{{ order.sum_time }}</td>
+                                <td>{{ order.car_type }}</td>
+                                {% if not car_number %}<td>{{ order.num|upper }}</td>{% endif %}
+                                {% if car_number %}<td>{% for name in order.service_list %}{{ name }}<br>{% endfor %}</td>{% endif %}
+                                <td align="center">{{ order.add_service }}</td>
+                                {% if car_number %}<td>{{ order.comment }}</td>{% endif %}
+                                <td>{{ order.sum }}</td>
+                            </tr>
+                        {% endfor %}
+        </table>
+        </div>
+    {% endspaceless %}
+    <script type="text/javascript">
+        {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+        $(document).ready(function () {
+                $("#ParkTable").tablesorter({sortList: [[0, 0]]});
+                $("#CarTable").tablesorter({sortList: [[0, 1]]});
+            }
+        );
+    </script>
+{% endblock %}

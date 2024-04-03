@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block title %}
+    Отчёты
+{% endblock %}
+{% block content %}
+    <h3>Отчёт по водителям, по годам</h3>
+    <div class="table-responsive">
+        <table class="table table-striped table-condensed">
+            <tr>
+                <th>ФИО</th>
+                <th>Январь</th>
+                <th>Февраль</th>
+                <th>Март</th>
+                <th>Апрель</th>
+                <th>Май</th>
+                <th>Июнь</th>
+                <th>Июль</th>
+                <th>Август</th>
+                <th>Сентябрь</th>
+                <th>Октябрь</th>
+                <th>Ноябрь</th>
+                <th>Декабрь</th>
+            </tr>
+            {% for i in complaint_all %}
+                <tr>
+                    <td>{{ i.get_driver_name }}</td>
+                    {% for j in month_12 %}
+                        <td>{% if i.complaint_date|date:"m" == j|floatformat %}+{% endif %}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

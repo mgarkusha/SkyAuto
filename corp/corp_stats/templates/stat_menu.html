@@ -1,0 +1,7 @@
+{% if user.is_authenticated %}
+    <a href="/stat/profit/" class="btn {% if profit_active %}btn-warning{% else %}btn-primary{% endif %}">ПРИБЫЛЬ (Y,M)</a>
+    <a href="/stat/smena_y_m/" class="btn {% if smena_y_m_active %}btn-warning{% else %}btn-primary{% endif %}">СМЕНА (Y,M)</a>
+    <a href="/stat/corp_y_m/" class="btn {% if corp_y_m_active %}btn-warning{% else %}btn-primary{% endif %}">КОРП (Y,M,D)</a>
+    <a href="/stat/billing_y_m/" class="btn {% if billing_y_m_active %}btn-warning{% else %}btn-primary{% endif %}">ВЫРУЧКА (Y,M)</a>
+    <a href="/stat/billing_current_m/" class="btn {% if billing_current_m_active %}btn-warning{% else %}btn-primary{% endif %}">ВЫРУЧКА (M,D)</a><br><Br>
+{% endif %}

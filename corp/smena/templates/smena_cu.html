@@ -1,0 +1,690 @@
+{% extends "base_smena.html" %}
+{% load bootstrap %}
+{% load staticfiles %}
+{% block title %}
+    Смена
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <!-- СМЕНА ХИТ-ПАРАД -->
+        <form role="form" class="form-inline" method="POST" action="" id="smena_form">{% csrf_token %}
+            <input type="hidden" id="status" value="{{ status }}">
+            <input type="hidden" id="driver_id" value="{{ driver_id }}">
+            <input type="hidden" id="smena_id" value="{{ smena_id }}">
+            {% if status == 0 %}
+                <input type="hidden" name="proceeds_cash" value="0">
+                <input type="hidden" name="proceeds_cash_orders" value="0">
+                <input type="hidden" name="proceeds_terminal" value="0">
+                <input type="hidden" name="proceeds_terminal_orders" value="0">
+                <input type="hidden" name="proceeds_corporate_bank" value="0">
+                <input type="hidden" name="proceeds_corporate_bank_orders" value="0">
+                <input type="hidden" name="proceeds" value="0">
+                <input type="hidden" name="spending_fuel_cash" value="0">
+                <input type="hidden" name="spending_fuel_litres" value="0">
+                <input type="hidden" name="spending_carwash" value="0">
+                <input type="hidden" name="spending_carwash_bank" value="0">
+                <input type="hidden" name="spending_parking" value="0">
+                <input type="hidden" name="spending_washer" value="0">
+                <input type="hidden" name="spending_to" value="0">
+                <input type="hidden" name="spending_lamp" value="0">
+                <input type="hidden" name="spending_repair" value="0">
+                <input type="hidden" name="spending_etc_comment" value="">
+                <input type="hidden" name="spending" value="0">
+                <input type="hidden" name="money_to_boss" value="0">
+                <input type="hidden" name="money_to_boss_fact" value="0">
+                <input type="hidden" name="debt" value="0">
+                <input type="hidden" name="debt_comment" value="">
+                <input type="hidden" name="fuel_consumption" value="">
+            {% endif %}
+            <div class="row" style="margin-top: -27px">
+                <div class="col-md-12">
+                    <h2>{{ driver_fullname }} {% if status == 0 %}
+                        <span class="label label-primary">ПЕРВИЧНЫЕ ДАННЫЕ</span>
+                    {% elif status == 1 %}<span class="label label-info">НОВЫЙ ВОДИТЕЛЬ</span>{% elif status == 3 %}
+                        <span class="label label-warning">РЕДАКТИРОВАНИЕ СМЕНЫ</span>&nbsp;
+                        <a onclick="return confirmDeleteSmena({{ smena.number }}, '{{ smena.date }}')"
+                           href="/smena/smena_delete/{{ smena.id }}" class="label label-danger">УДАЛИТЬ
+                            СМЕНУ</a>{% endif %}</h2>
+                    <h3 style="margin-top: -2px">{% if status == 3 %}Редактирование смены № {{ smena.number }} от
+                        {{ smena.date }}{% else %}Закрытие
+                        смены от {{ time }}{% endif %}</h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">
+                                        Период смены
+                                    </h3>
+                                </div>
+                                <table class="table table-bordered small">
+                                    <tr>
+                                        <td>
+                                            <div class="input-group width100">
+                                                <span class="input-group-addon">C</span>
+                                                <input type="text" class="form-control"
+                                                       value="{{ start_date|date:"o-m-d H:i:s" }}" name="start_date"
+                                                       readonly>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="input-group width100">
+                                                <span class="input-group-addon">ПО</span>
+                                                <input type="text" class="form-control datepicker-here"
+                                                       data-timepicker="true" name="finish_date" id="finish_date"
+                                                       {% if not recalculation %}disabled{% endif %}>
+                                                {% if status != 0 %}<span class="input-group-btn"><button
+                                                        class="btn btn-default width100" type="button"
+                                                        onclick="smena_calculate()"
+                                                        {% if not recalculation %}disabled{% endif %}><strong>Пересчитать</strong></button></span>{% endif %}
+                                            </div>
+                                            <div class="result" id="for_regexp_finishDate" style="display: none">{{ finish_date|date:"Y" }}-{{ finish_date|date:"m" }}-{{ finish_date|date:"j" }} {{ finish_date|date:"H" }}:{{ finish_date|date:"i" }}</div>
+                                        </td>
+                                    </tr>
+                                </table>
+                                {% if status != 0 %}
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title">
+                                            Итоги смены
+                                        </h3>
+                                    </div>
+                                    <table class="table table-bordered small">
+                                        <tr>
+                                            <td class="text-center"><h4>{{ all_money_current_smena|floatformat }} ₽</h4>
+                                            </td>
+                                            <td class="text-center"><h4>{{ all_orders_current_smena }} шт</h4></td>
+                                        </tr>
+                                    </table>
+                                    <table class="table table-bordered table-striped" style="width: 50%; float: left">
+                                        <tr>
+                                            <th colspan="3" class="text-center active">Расшифровка</th>
+                                        </tr>
+                                        <tr class="warning">
+                                            <td>
+                                                <div class="input-group width100">
+                                                    <span class="input-group-addon" id="css-proceeds-name">безнал</span>
+                                                    <input type="text" class="form-control" id="proceeds_corporate_bank"
+                                                           name="proceeds_corporate_bank"
+                                                           value="{{ proceeds_corporate_bank|floatformat }}"
+                                                           style="width: 100%; text-align: right">
+                                                    <input type="hidden" name="proceeds_corporate_bank_orders"
+                                                           value="{{ proceeds_corporate_bank_orders }}">
+                                                    <span class="input-group-addon"
+                                                          id="css-proceeds-orders">{{ proceeds_corporate_bank_orders }} шт</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="info">
+                                            <td>
+                                                <div class="input-group width100">
+                                                    <span class="input-group-addon"
+                                                          id="css-proceeds-name">Терминал</span>
+                                                    <input type="text" class="form-control" id="proceeds_terminal"
+                                                           name="proceeds_terminal"
+                                                           value="{{ proceeds_terminal|floatformat }}"
+                                                           style="width: 100%; text-align: right">
+                                                    <input type="hidden" name="proceeds_terminal_orders"
+                                                           value="{{ proceeds_terminal_orders }}">
+                                                    <span class="input-group-addon"
+                                                          id="css-proceeds-orders">{{ proceeds_terminal_orders }} шт</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="success">
+                                            <td>
+                                                <div class="input-group width100">
+                                                    <span class="input-group-addon" id="css-proceeds-name">Нал</span>
+                                                    <input type="text" class="form-control" id="proceeds_cash"
+                                                           name="proceeds_cash"
+                                                           value="{{ proceeds_cash|floatformat }}"
+                                                           style="width: 100%; text-align: right" readonly>
+                                                    <input type="hidden" name="proceeds_cash_orders"
+                                                           value="{{ proceeds_cash_orders }}">
+                                                    <span class="input-group-addon"
+                                                          id="css-proceeds-orders">{{ proceeds_cash_orders }} шт</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span style="color: red; font-size: 20px;">Внимание!</span> Применяется
+                                                формула:<br>
+                                                <span class="label label-success">НАЛ</span> = <span
+                                                    class="label label-info">ИТОГО</span> - <span
+                                                    class="label label-warning">БЕЗНАЛ</span> - <span
+                                                    class="label label-primary">ТЕРМИНАЛ</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table class="table table-bordered table-striped" style="width: 50%;">
+                                        <tr>
+                                            <th class="text-center active">Сдача смены</th>
+                                        </tr>
+                                        <tr>
+                                            <td>{% if status != 0 %}
+                                                <div class="input-group width100">
+                                                <span class="input-group-addon"
+                                                      id="css-proceeds-calculate">Затраты</span>
+                                                    <input type="text" class="form-control" id="spending"
+                                                           name="money_to_boss"
+                                                           value="{% if smena.spending %}{{ smena.spending }}{% else %}0{% endif %}"
+                                                           style="width: 100%; text-align: right" readonly></div>
+                                                {% if debt_last_smena %}
+                                                    <div class="input-group width100 has-error" style="margin-top: 9px">
+                                                    <span class="input-group-addon"
+                                                      id="css-proceeds-calculate">Прошлый долг</span>
+                                                    <input type="text" class="form-control" id="debt_last_smena"
+                                                           name="debt_last_smena"
+                                                           value="{{ debt_last_smena }}"
+                                                           style="width: 100%; text-align: right" readonly></div>
+                                                    <label class="control-label label-warning" for="debt_last_smena">{{ debt_last_smena_comment }}</label>
+                                                    {% endif %}
+                                                <div class="input-group width100" style="margin-top: 9px">
+                                                <span class="input-group-addon"
+                                                      id="css-proceeds-calculate">К сдаче</span>
+                                                    <input type="text" class="form-control" id="money_to_boss"
+                                                           name="money_to_boss"
+                                                           value="{% if smena.money_to_boss %}{{ smena.money_to_boss }}{% else %}{{ proceeds_cash }}{% endif %}"
+                                                           style="width: 100%; text-align: right" readonly></div>
+                                                <div class="input-group width100 has-success" style="margin-top: 9px">
+                                                <span class="input-group-addon"
+                                                      id="css-proceeds-calculate">Факт сдал</span>
+                                                    <input type="text" class="form-control" id="money_to_boss_fact"
+                                                           name="money_to_boss_fact"
+                                                           value="{{ smena.money_to_boss_fact }}"
+                                                           style="width: 100%; text-align: right"></div>
+                                                <div class="input-group width100 has-error" style="margin-top: 9px">
+                                                    <span class="input-group-addon"
+                                                          id="css-proceeds-calculate">Долг</span>
+                                                    <input type="text" class="form-control" id="debt"
+                                                           name="debt"
+                                                           value="{{ smena.debt }}"
+                                                           style="width: 100%; text-align: right"
+                                                           readonly></div>
+                                                <textarea class="form-control"
+                                                          style="width: 100%; margin-top: 9px;"
+                                                          rows="3"
+                                                          name="debt_comment"
+                                                          placeholder="Комментарий к долгу">{{ smena.debt_comment }}</textarea>
+                                            {% endif %}</td>
+                                        </tr>
+                                    </table>
+                                {% endif %}
+                            </div>
+                            <nobr><a href="#" onClick="history.go(-1)" class="btn btn-info text-center width50 btn-lg"
+                                     style="margin-top: -5px">Вернуться</a>&nbsp;<button type="submit"
+                                                                                         class="btn btn-primary text-center width50 btn-lg"
+                                                                                         style="margin-top: -5px">
+                                Провести смену
+                            </button>
+                            </nobr>
+                        </div>
+                        <div class="col-md-3">
+                            {% if status != 0 %}
+                                <div class="panel panel-info">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title">Затраты</h3>
+                                    </div>
+                                    <table class="table table-bordered table-striped small">
+                                        <tr>
+                                            <td>
+                                                <div class="input-group width100">
+                                                    <span class="input-group-addon"
+                                                          id="css-spendings-name">Бенз.руб</span>
+                                                    <input type="text" class="form-control" id="spending_fuel_cash"
+                                                           name="spending_fuel_cash"
+                                                           placeholder="РУБ" value="{{ smena.spending_fuel_cash }}">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="input-group width100">
+                                                    <span class="input-group-addon"
+                                                          id="css-spendings-name">Бенз.л</span>
+                                                    <input type="text" class="form-control" id="spending_fuel_litres"
+                                                           name="spending_fuel_litres"
+                                                           value="{{ smena.spending_fuel_litres }}"
+                                                           placeholder="ЛИТРЫ"></div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="input-group width100">
+                                                    <span class="input-group-addon" id="css-spendings-name">Мойка</span>
+                                                    <input type="text" class="form-control" id="spending_carwash"
+                                                           name="spending_carwash" value="{{ smena.spending_carwash }}"
+                                                           placeholder="РУБ"></div>
+                                            </td>
+                                            <td>
+                                                <div class="input-group width100">
+                                                <span class="input-group-addon"
+                                                      id="css-spendings-name">Мойка б.н.</span>
+                                                    <input type="text" class="form-control" id="spending_carwash_bank"
+                                                           name="spending_carwash_bank"
+                                                           value="{{ smena.spending_carwash_bank }}"
+                                                           placeholder="РУБ"></div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="input-group width100">
+                                                    <span class="input-group-addon"
+                                                          id="css-spendings-name">Парковка</span>
+                                                    <input type="text" class="form-control" id="spending_parking"
+                                                           name="spending_parking" value="{{ smena.spending_parking }}"
+                                                           placeholder="РУБ"></div>
+                                            </td>
+                                            <td>
+                                                <div class="input-group width100">
+                                                    <span class="input-group-addon"
+                                                          id="css-spendings-name">Омывайка</span>
+                                                    <input type="text" class="form-control"
+                                                           value="{{ smena.spending_washer }}"
+                                                           id="spending_washer" name="spending_washer"
+                                                           placeholder="РУБ"></div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="input-group width100">
+                                                <span class="input-group-addon"
+                                                      id="css-spendings-name">ТО</span>
+                                                    <input type="text" class="form-control" id="spending_to"
+                                                           name="spending_to" value="{{ smena.spending_to }}"
+                                                           placeholder="РУБ"></div>
+                                            </td>
+                                            <td>
+                                                <div class="input-group width100">
+                                                    <span class="input-group-addon"
+                                                          id="css-spendings-name">Лампочки</span>
+                                                    <input type="text" class="form-control"
+                                                           value="{{ smena.spending_lamp }}"
+                                                           id="spending_lamp" name="spending_lamp"
+                                                           placeholder="РУБ"></div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                <div class="input-group width100">
+                                                    <span class="input-group-addon"
+                                                          id="css-spendings-name">Ремонт</span>
+                                                    <input type="text" class="form-control"
+                                                           value="{{ smena.spending_repair }}"
+                                                           id="spending_repair" name="spending_repair"
+                                                           placeholder="РУБ"></div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                <div class="input-group width100">
+                                                    <span class="input-group-addon"
+                                                          id="css-spendings-name">Прочее</span>
+                                                    <input type="text" class="form-control"
+                                                           value="{{ smena.spending_etc }}"
+                                                           id="spending_etc" name="spending_etc"
+                                                           placeholder="РУБ"></div>
+                                                <textarea class="form-control" style="width: 100%; margin-top: 9px"
+                                                          name="spending_etc_comment"
+                                                          placeholder="Комментарий к прочим расходам">{{ smena.spending_etc_comment }}</textarea>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="panel panel-info">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title">Пробег</h3>
+                                    </div>
+                                    <table class="table table-bordered table-striped">
+                                        <tr>
+                                            <th>Авто</th>
+                                            <th>Период</th>
+                                            <th>Пробег</th>
+                                        </tr>
+                                        {% for car in cars_chart %}
+                                            <tr>
+                                                <td>
+                                                    <span class="text-nowrap"><strong>{{ car.idmodel.name }}</strong></span><Br><span
+                                                        class="label label-default">{{ car.callsign }}</span>&nbsp;<span
+                                                        class="label label-primary text-nowrap">{{ car.number }}</span>
+                                                </td>
+                                                <td>
+                                                    <table class="table-responsive">
+                                                        <tr>
+                                                            <td rowspan="4"><span
+                                                                    class="glyphicon glyphicon-arrow-down"></span></td>
+                                                            <td><span
+                                                                    class="label label-default">{{ car.from|date:"j F Y" }}</span>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><input type="text" class="form-control" name="start_km_{{ forloop.counter }}" id="start_km_{{ forloop.counter }}" value="{{ car.start_km }}" size="17" placeholder="Начальный пробег, КМ"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><span
+                                                                    class="label label-default">{{ car.to|date:"j F Y" }}</span>
+                                                            </td>
+                                                        </tr>
+                                                    <tr>
+                                                            <td><input type="text" class="form-control" name="finish_km_{{ forloop.counter }}" id="finish_km_{{ forloop.counter }}" value="{{ car.finish_km }}" placeholder="Конечный пробег, КМ" size="17"></td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control"
+                                                           name="run_{{ forloop.counter }}" id="run_{{ forloop.counter }}" placeholder="КМ" size="5" readonly>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    <tr>
+                                        <td><strong>Расход</strong><br>[л*100/пробег]</td>
+                                        <td colspan="2"><input type="text" id="fuel_consumption" name="fuel_consumption" class="form-control" readonly value="0"></td>
+                                    </tr>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-5">
+                            {% if status != 0 %}
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">Заказы за период: <span
+                                            class="label label-default"
+                                            style="font-size: 13px">{{ start_date|date:"d F Y H:i:s" }}</span> -
+                                        <span
+                                                class="label label-default"
+                                                style="font-size: 13px">{{ finish_date|date:"d F Y H:i" }}</span>
+                                    </div>
+                                    <table class="table table-condensed table-bordered small" id="OrdersTable">
+                                        <thead>
+                                        <tr style="cursor: pointer;">
+                                            <th>Дата</th>
+                                            <th>Пассажир</th>
+                                            <th class="text-center">Сумма</th>
+                                            <th class="text-center">Метод оплаты</th>
+                                        </tr>
+                                        </thead>
+                                        {% for order in orders_current_smena %}
+                                            <tr {% if order.pay_method == 'наличные' %}class="success"{% endif %}>
+                                                <td {% if order.pay_method == 'наличные' %}style="font-weight: bold"{% endif %}
+                                                    style="white-space: nowrap">
+                                                    {{ order.deliverytime|date:"j N D H:i" }}</td>
+                                                <td style="white-space: nowrap">{% if order.corporate_name %}
+                                                    <span class="label label-warning">{{ order.corporate_name }}</span>
+                                                    {% if order.no_inn %}&nbsp;
+                                                        <span class="label label-danger">без инн</span>{% endif %}
+                                                    <br>{% endif %}{{ order.passengername }}</td>
+                                                <td {% if order.pay_method == 'наличные' %}style="font-weight: bold"{% endif %}>{{ order.cost|floatformat }}</td>
+                                                <td class="{% if order.pay_method == 'наличные' %}success{% elif order.pay_method == 'терминал' %}info{% elif order.pay_method == 'безнал' %}warning{% elif order.pay_method == 'сайт' %}danger{% else %}active{% endif %}">{{ order.pay_method }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </table>
+                                </div>
+
+                                </div>
+                            {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+        <script type="text/javascript">
+            /* GoBack */
+            function goBack() {
+                window.history.back();
+            }
+
+            /* Инициализация календарика */
+            var finish_date = new Date({{ finish_date|date:"Y" }}, {{ finish_date|date:"m" }}-1, {{ finish_date|date:"j" }}, {{ finish_date|date:"H" }}, {{ finish_date|date:"i" }});
+            var dp = $('#finish_date').datepicker({startDate: finish_date}).data('datepicker');
+            dp.selectDate(finish_date);
+
+            /* -----------
+                Пересчёт смены
+            ---------- */
+            // Копируем в DIV класса result выбранное значение календарика
+            $(function () {
+                var datepicker = $('.datepicker-here').datepicker({
+                    onSelect: function (formattedDate, date, inst) {
+                        $('.result').text(formattedDate);
+                    }
+                }).data('datepicker');
+                $('.calc__date_wrap').click(function () {
+                    $('.datepicker-here').toggle();
+                });
+            });
+
+            // Форматируем регуляркой и переходим по ссылке
+            function smena_calculate() {
+                var driver_id = document.getElementById('driver_id');
+                {% if smena_id %}
+                    var status = 3;
+                {% else %}
+                    var status = document.getElementById('status').value;
+                {% endif %}
+                var finishDate = document.getElementById('for_regexp_finishDate').innerText;
+                var new_url = document.getElementById('for_regexp_finishDate').innerText = finishDate.replace(/\D/g, "/");
+                window.location.href = '/smena/' + driver_id.value + '/' + status + '/' + new_url;
+            }
+
+            /* -----------
+                 Сдача смены
+                ----------- */
+            var smena_form = document.getElementById('smena_form');
+            /* Доходы */
+            var proceeds_cash = document.getElementById('proceeds_cash');
+            /* Расходы */
+
+            /* Сдача денег боссу */
+            var money_to_boss_fact = document.getElementById('money_to_boss_fact');
+            /* Подсчёты */
+
+            smena_form.oninput = function () {
+                calculate_smena();
+            };
+            calculate_smena();
+
+            function calculate_smena() {
+                var spending_fuel_cash = parseInt(document.getElementById('spending_fuel_cash').value);
+                var spending_fuel_litres = parseInt(document.getElementById('spending_fuel_litres').value);
+                var spending_carwash = parseInt(document.getElementById('spending_carwash').value);
+                var spending_parking = parseInt(document.getElementById('spending_parking').value);
+                var spending_washer = parseInt(document.getElementById('spending_washer').value);
+                var spending_to = parseInt(document.getElementById('spending_to').value);
+                var spending_lamp = parseInt(document.getElementById('spending_lamp').value);
+                var spending_repair = parseInt(document.getElementById('spending_repair').value);
+                var spending_etc = parseInt(document.getElementById('spending_etc').value);
+                var proceeds_corporate_bank = parseInt(document.getElementById('proceeds_corporate_bank').value);
+                var proceeds_terminal = parseInt(document.getElementById('proceeds_terminal').value);
+                var proceeds_cash = parseInt(document.getElementById('proceeds_cash').value);
+                {% if debt_last_smena %}
+                var debt_last_smena = parseInt(document.getElementById('debt_last_smena').value);
+                {% endif %}
+                var fuel_consumption = parseInt(document.getElementById('fuel_consumption').value);
+                {#var run_1 = parseInt(document.getElementById('run_1').value);#}
+                {#var start_km_1 = parseInt(document.getElementById('start_km_1').value);#}
+                if (document.getElementById('start_km_1')) {
+                    var start_km_1 = parseInt(document.getElementById('start_km_1').value);
+                }
+                else {
+                    start_km_1 = 0
+                }
+                if (document.getElementById('start_km_2')) {
+                    var start_km_2 = parseInt(document.getElementById('start_km_2').value);
+                }
+                else {
+                    start_km_2 = 0
+                }
+                if (document.getElementById('start_km_3')) {
+                    var start_km_3 = parseInt(document.getElementById('start_km_3').value);
+                }
+                else {
+                    start_km_3 = 0
+                }
+                if (document.getElementById('start_km_4')) {
+                    var start_km_4 = parseInt(document.getElementById('start_km_4').value);
+                }
+                else {
+                    start_km_4 = 0
+                }
+                if (document.getElementById('finish_km_1')) {
+                    var finish_km_1 = parseInt(document.getElementById('finish_km_1').value);
+                }
+                else {
+                    finish_km_1 = 0
+                }
+                if (document.getElementById('finish_km_2')) {
+                    var finish_km_2 = parseInt(document.getElementById('finish_km_2').value);
+                }
+                else {
+                    finish_km_2 = 0
+                }
+                if (document.getElementById('finish_km_3')) {
+                    var finish_km_3 = parseInt(document.getElementById('finish_km_3').value);
+                }
+                else {
+                    finish_km_3 = 0
+                }
+                if (document.getElementById('finish_km_4')) {
+                    var finish_km_4 = parseInt(document.getElementById('finish_km_4').value);
+                }
+                else {
+                    finish_km_4 = 0
+                }
+                {#if (document.getElementById('run_1')) {#}
+                {#    var run_1 = parseInt(document.getElementById('run_1').value);#}
+                {#}#}
+                {#else {#}
+                {#    run_1 = 0#}
+                {#}#}
+                {#if (document.getElementById('run_2')) {#}
+                {#    var run_2 = parseInt(document.getElementById('run_2').value);#}
+                {#}#}
+                {#else {#}
+                {#    run_2 = 0#}
+                {#}#}
+                {#if (document.getElementById('run_3')) {#}
+                {#    var run_3 = parseInt(document.getElementById('run_3').value);#}
+                {#}#}
+                {#else {#}
+                {#    run_3 = 0#}
+                {#}#}
+                {#if (document.getElementById('run_4')) {#}
+                {#    var run_4 = parseInt(document.getElementById('run_4').value);#}
+                {#}#}
+                {#else {#}
+                {#    run_4 = 0#}
+                {#}#}
+                if (isNaN(spending_fuel_cash)) spending_fuel_cash = 0;
+                if (isNaN(spending_fuel_litres)) spending_fuel_litres = 0;
+                if (isNaN(spending_carwash)) spending_carwash = 0;
+                if (isNaN(spending_parking)) spending_parking = 0;
+                if (isNaN(spending_washer)) spending_washer = 0;
+                if (isNaN(spending_to)) spending_to = 0;
+                if (isNaN(spending_lamp)) spending_lamp = 0;
+                if (isNaN(spending_repair)) spending_repair = 0;
+                if (isNaN(spending_etc)) spending_etc = 0;
+                if (isNaN(proceeds_corporate_bank)) proceeds_corporate_bank = 0;
+                if (isNaN(proceeds_terminal)) proceeds_terminal = 0;
+                if (isNaN(proceeds_cash)) proceeds_cash = 0;
+                if (isNaN(fuel_consumption)) fuel_consumption = 0;
+                {% if debt_last_smena %}
+                if (isNaN(debt_last_smena)) debt_last_smena = 0;
+                {% endif %}
+                {#if (isNaN(run_1)) run_1 = 0;#}
+                {#if (isNaN(run_2)) run_2 = 0;#}
+                {#if (isNaN(run_3)) run_3 = 0;#}
+                {#if (isNaN(run_4)) run_4 = 0;#}
+                if (isNaN(start_km_1)) start_km_1 = 0;
+                if (isNaN(start_km_2)) start_km_2 = 0;
+                if (isNaN(start_km_3)) start_km_3 = 0;
+                if (isNaN(start_km_4)) start_km_4 = 0;
+                if (isNaN(finish_km_1)) finish_km_1 = 0;
+                if (isNaN(finish_km_2)) finish_km_2 = 0;
+                if (isNaN(finish_km_3)) finish_km_3 = 0;
+                if (isNaN(finish_km_4)) finish_km_4 = 0;
+                var spending_result = spending_fuel_cash + spending_carwash + spending_parking + spending_washer + spending_to + spending_lamp + spending_repair + spending_etc;
+                if (isNaN(spending_result)) spending_result = 0;
+                document.getElementById('spending').value = spending_result;
+                var proceeds_cash_result = {{ all_money_current_smena|floatformat }} -proceeds_corporate_bank - proceeds_terminal;
+                document.getElementById('proceeds_cash').value = proceeds_cash_result;
+                var money_to_boss_result = proceeds_cash_result - spending_result {% if debt_last_smena %}+ debt_last_smena{% endif %};
+                document.getElementById('money_to_boss').value = money_to_boss_result;
+                var debt1 = money_to_boss_result - parseInt(money_to_boss_fact.value);
+                if (isNaN(debt1)) {
+                    document.getElementById('debt').value = '';
+                } else {
+                    document.getElementById('debt').value = debt1;
+                }
+
+                {#ПРОБЕГИ - РАСХОД ТОПЛИВА#}
+                var run_1 = finish_km_1 - start_km_1;
+                var run_2 = finish_km_2 - start_km_2;
+                var run_3 = finish_km_3 - start_km_3;
+                var run_4 = finish_km_4 - start_km_4;
+
+                if (run_1) {
+                    if (run_1 < 0) {
+                        run_1 = 0
+                    }
+                    document.getElementById('run_1').value = run_1
+                }
+                if (run_2) {
+                    if (run_2 < 0) {
+                        run_2 = 0
+                    }
+                    document.getElementById('run_2').value = run_2
+                }
+                if (run_3) {
+                    if (run_3 < 0) {
+                        run_3 = 0
+                    }
+                    document.getElementById('run_3').value = run_3
+                }
+                if (run_4) {
+                    if (run_4 < 0) {
+                        run_4 = 0
+                    }
+                    document.getElementById('run_4').value = run_4
+                }
+
+                var run = run_1 + run_2 + run_3 + run_4;
+                if (run) {
+                    var fuel_consumption_result = spending_fuel_litres * 100 / run;
+                } else {
+                    fuel_consumption_result = 0;
+                }
+                if (isNaN(fuel_consumption_result)) {
+                    document.getElementById('fuel_consumption').value = '';
+                } else {
+                    document.getElementById('fuel_consumption').value = parseFloat(fuel_consumption_result.toFixed(1));
+                }
+            };
+
+            /* Взял тут https://stackoverflow.com/questions/1009808/enter-key-press-behaves-like-a-tab-in-javascript
+            При нажатии на ENTER, переходит на следующий INPUT
+             */
+
+            $('body').on('keydown', 'input, select, textarea', function (e) {
+                var self = $(this)
+                    , form = self.parents('form:eq(0)')
+                    , focusable
+                    , next
+                ;
+                if (e.keyCode == 13) {
+                    focusable = form.find('input,a,select,button,textarea').filter(':visible');
+                    next = focusable.eq(focusable.index(this) + 1);
+                    if (next.length) {
+                        next.focus();
+                    }
+                    {#else {#}
+                    {#    form.submit();#}
+                    {#}#}
+                    return false;
+                }
+            });
+            /*Сортировка таблиц средствами jquerry плагина TABLESORTER*/
+            $(document).ready(function () {
+                    $("#OrdersTable").tablesorter();
+                }
+            );
+        </script>
+    {% endspaceless %}
+{% endblock %}

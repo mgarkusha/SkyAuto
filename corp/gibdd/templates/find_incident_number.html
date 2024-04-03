@@ -1,0 +1,104 @@
+{% extends "base_gibdd.html" %}
+{% load staticfiles %}
+{% block title %}
+    Поиск штрафа ГИБДД
+{% endblock %}
+{% block content %}
+    {% if user.is_authenticated %}
+        {% spaceless %}
+            <div class="row">
+                <div class="col-sm-12">
+                    {% if incident %}<h1>Постановление <strong>{{ incident_number_in }} найдено!</strong></h1>
+                        <table class="table table-striped table-condensed">
+                            <thead>
+                            <tr>
+                                <th>Наименование</th>
+                                <th>Значение</th>
+                            </tr>
+                            </thead>
+                            <tr>
+                                <td>Дата документа</td>
+                                <td>{{ incident.date }}</td>
+                            </tr>
+                            <tr>
+                                <td>Водитель</td>
+                                <td style="font-size: 20px; font-weight: bold;">{{ incident.fullname }}</td>
+                            </tr>
+                            <tr>
+                                <td>Авто</td>
+                                <td><span
+                                            class="label label-primary">{{ incident.car_callsign }}</span><br>{{ incident.car_model }}<br><span
+                                            class="label label-default">{{ incident.car_number }}</span></td>
+                            </tr>
+                            <tr>
+                                <td>Дата нарушения</td>
+                                <td>{{ incident.incident_date }}</td>
+                            </tr>
+                            <tr>
+                                <td>Номер постановления</td>
+                                <td>{{ incident.incident_number }}</td>
+                            </tr>
+                            <tr>
+                                <td>Дата постановления</td>
+                                <td>{{ incident.incident_decree_date }}</td>
+                            </tr>
+                            <tr>
+                                <td>Суть нарушения</td>
+                                <td>{{ incident.incident_type }}</td>
+                            </tr>
+                            <tr>
+                                <td>Скорость движения</td>
+                                <td><div id="circle_red"><span class="innerTEXT">{{ incident.incident_speed }}</span>
+                                        </div></td>
+                            </tr>
+                                                        <tr>
+                                <td>Разрешенная скорость движения</td>
+                                <td><div id="circle_green"><span
+                                                class="innerTEXT">{{ incident.speed_recommend }}</span>
+                                        </div></td>
+                            </tr>
+                            <tr>
+                                <td>Место нарушения</td>
+                                <td>{{ incident.incident_place }}</td>
+                            </tr>
+                            <tr>
+                                <td>Сумма штрафа ГИБДД</td>
+                                <td>{{ incident.penalty_gibdd }}</td>
+                            </tr>
+                            <tr>
+                                <td>Комментарий руководителя</td>
+                                <td>{{ incident.manager_comment }}</td>
+                            </tr>
+                            <tr>
+                                <td>Оплата штрафа в ГИБДД</td>
+                                <td>{% if incident.penalty_gibdd_paid %}<h4><span class="label label-success" style="width: 100px"><span
+                                                class="glyphicon glyphicon-ok-circle"></span>&nbsp;ОПЛАЧЕНО</span>
+                                        </h4>{% else %}<h4><span class="label label-danger" style="width: 100px"><span
+                                                class="glyphicon glyphicon-remove-circle"></span>&nbsp;НЕТ ОПЛАТЫ</span>
+                                        </h4>{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td>Дата оплаты штрафа в ГИБДД</td>
+                                <td>{{ incident.penalty_gibdd_paid_date }}</td>
+                            </tr>
+                            <tr>
+                                <td>Оплата штрафа водителем</td>
+                                <td>{% if incident.penalty_driver_paid %}<h4><span class="label label-success" style="width: 100px"><span
+                                                class="glyphicon glyphicon-ok-circle"></span>&nbsp;ОПЛАЧЕНО</span>
+                                        </h4>{% else %}<h4><span class="label label-danger" style="width: 100px"><span
+                                                class="glyphicon glyphicon-remove-circle"></span>&nbsp;НЕТ ОПЛАТЫ</span>
+                                        </h4>{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td>Дата оплаты штрафа водителем</td>
+                                <td>{{ incident.penalty_driver_paid_date }}</td>
+                            </tr>
+                        </table>
+                    {% else %}
+                        <h1>Постановление <strong>{{ incident_number_in }}</strong> не найдено!</h1>
+                    {% endif %}
+                </div>
+            </div>
+        {% endspaceless %}
+    {% endif %}
+{% endblock %}

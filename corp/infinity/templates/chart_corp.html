@@ -1,0 +1,157 @@
+{% extends "base_infinity.html" %}
+{% load staticfiles %}
+{% block title %}
+    Хит-Парад: {{ corporate_name }}
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+{#        {% if user.groups.all.0.name == 'Администратор' %}#}
+            <h1>{{ corporate_name }}</h1>
+            <div class="row">
+                <div class="col-md-2 text-center">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <h3>Сегодня</h3>
+                        </div>
+                        <h3>{{ sum_today|floatformat }} ₽</h3>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3>Вчера</h3>
+                        </div>
+                        <h3>{% if sum_yesterday %}{{ sum_yesterday|floatformat }} ₽{% else %}Отсутствуют{% endif %}</h3>
+                    </div>
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3>{{ current_day|date:"F" }} (ПЛАН)</h3>
+                        </div>
+                        <h3>{{ sum_month_plan|floatformat }} ₽</h3>
+                        <table class="table table-bordered table-striped">
+                            <tr>
+                                <td style="font-weight: bold;">Запланированые</td>
+                            </tr>
+                            <tr>
+                                <td style="background: #c6c5fa;">{{ sum_pre|floatformat }}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Сейчас</td>
+                            </tr>
+                            <tr>
+                                <td style="background: #cefaca; font-weight: bold;">{{ sum_active|floatformat }}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Выполненные</td>
+                            </tr>
+                            <tr>
+                                <td style="background: #f5fa42; font-weight: bold;  ">{{ sum_month|floatformat }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <a href="/stat/corp_y_m/{{ current_year }}/{{ current_month }}/{{ corp_id }}/"
+                       class="btn btn-success text-center width50 btn-lg" style="margin-top: -5px; width: 100%;">Статистика</a><br><br>
+                    <a href="#" onclick="window.history.back()" class="btn btn-info text-center width50 btn-lg"
+                       style="margin-top: -5px; width: 100%;">Вернуться</a><br><br>
+                </div>
+                <div class="col-md-10">
+                    <h2>Запланированые: {{ sum_pre|floatformat }} ₽</h2>
+                    <table class="table table-condensed table-bordered small" id="OrderTable-pre">
+                        <thead>
+                        <tr style="cursor: pointer; background: #c6c5fa;">
+                            <th>Дата</th>
+                            <th>Откуда</th>
+                            <th>Куда</th>
+                            <th>Пассажир</th>
+                            <th>Телефон</th>
+                            <th>Комментарий</th>
+                            <th>Комментарий адрес</th>
+                            <th>Сумма</th>
+                        </tr>
+                        </thead>
+                        {% for order in corp_pre_orders %}
+                            {% if order.today_marker %}
+                                <tr style="background-color: #dfdefc;">{% else %}
+                                <tr>{% endif %}
+                                <td style="white-space: nowrap">{{ order.deliverytime|date:"j N D H:i" }}</td>
+                                <td>{{ order.deliverystr }}</td>
+                                <td>{{ order.destinationstr }}</td>
+                                <td style="white-space: nowrap">{{ order.passengername }}</td>
+                                <td>{{ order.phone }}</td>
+                                <td>{{ order.description }}</td>
+                                <td>{{ order.addrdescription }}</td>
+                                <td style="font-weight: bold">{{ order.cost|floatformat }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    <h2>Сейчас: {{ sum_active|floatformat }} ₽</h2>
+                    <table class="table table-condensed table-bordered small" id="OrderTable-now">
+                        <thead>
+                        <tr style="cursor: pointer; background: #cefaca;">
+                            <th>Дата</th>
+                            <th>Откуда</th>
+                            <th>Куда</th>
+                            <th>Пассажир</th>
+                            <th>Телефон</th>
+                            <th>Комментарий</th>
+                            <th>Комментарий адрес</th>
+                            <th>Сумма</th>
+                        </tr>
+                        </thead>
+                        {% for order in corp_active_orders %}
+                            {% if order.today_marker %}
+                                <tr style="background-color: #f1fae7;">{% else %}
+                                <tr>{% endif %}
+                                <td style="white-space: nowrap">{{ order.deliverytime|date:"j N D H:i" }}</td>
+                                <td>{{ order.deliverystr }}</td>
+                                <td>{{ order.destinationstr }}</td>
+                                <td style="white-space: nowrap">{{ order.passengername }}</td>
+                                <td>{{ order.phone }}</td>
+                                <td>{{ order.description }}</td>
+                                <td>{{ order.addrdescription }}</td>
+                                <td style="font-weight: bold">{{ order.cost|floatformat }}</td>
+
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    <h2>Выполненные: {{ sum_month|floatformat }} ₽</h2>
+                    <table class="table table-condensed table-bordered small" id="OrderTable-done">
+                        <thead>
+                        <tr style="cursor: pointer; background: #f5fa42;">
+                            <th>Дата</th>
+                            <th>Откуда</th>
+                            <th>Куда</th>
+                            <th>Пассажир</th>
+                            <th>Телефон</th>
+                            <th>Комментарий</th>
+                            <th>Комментарий адрес</th>
+                            <th>Сумма</th>
+                        </tr>
+                        </thead>
+                        {% for order in corp_orders %}
+                            {% if order.today_marker %}
+                                <tr style="background-color: #f2f5a9;">{% else %}
+                                <tr>{% endif %}
+                        <td style="white-space: nowrap">{{ order.deliverytime|date:"j N D H:i" }}</td>
+                        <td>{{ order.deliverystr }}</td>
+                        <td>{{ order.destinationstr }}</td>
+                        <td style="white-space: nowrap">{{ order.passengername }}</td>
+                        <td>{{ order.phone }}</td>
+                        <td>{{ order.description }}</td>
+                        <td>{{ order.addrdescription }}</td>
+                        <td style="font-weight: bold">{{ order.cost|floatformat }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+{#        {% endif %}#}
+    {% endspaceless %}
+    <script type="text/javascript">
+        {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+        $(document).ready(function () {
+                $("#OrderTable-pre").tablesorter({sortList: [[0, 0]]});
+                $("#OrderTable-now").tablesorter({sortList: [[0, 0]]});
+                $("#OrderTable-done").tablesorter({sortList: [[0, 1]]});
+            }
+        );
+    </script>
+{% endblock %}

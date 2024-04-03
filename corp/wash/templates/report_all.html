@@ -1,0 +1,151 @@
+{% extends "base_wash.html" %}
+{% load staticfiles %}
+{% block title %}
+    Мойка
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+        {% endif %}
+        <div class="row">
+        <div class="col-md-4">
+            <h2>Итого, парк / улица</h2>
+            <table class="table table-condensed table-bordered small table-striped table-hover" id="SummaryTable">
+                <thead>
+                <tr style="background: #E2FADB;">
+                    <th>Год</th>
+                    <th>Мес</th>
+                    <th>Парк,шт</th>
+                    <th>Улица,шт</th>
+                    <th>Итого,шт</th>
+                    <th>Парк,руб</th>
+                    <th>Улица,руб</th>
+                    <th>Итого,руб</th>
+                </tr>
+                </thead>
+                {% for date in date_chart %}
+                    <tr onclick="document.location = '/wash/report_all/{{ date.year }}/{{ date.month|date:"m" }}';"
+                        style="cursor: pointer;">
+                        <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.year }}</td>
+                        <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.month|date:"F" }}</td>
+                        <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.all_park_orders }}</td>
+                        <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.all_enemy_orders }}</td>
+                        <td {% if date.current_month %}class="bg-primary" style="background: #fbfd83; color: black; font-weight: bold"{% else %}style="background: #E2FADB;" {% endif %}>{{ date.all_orders }}</td>
+                        <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.all_park_money }}</td>
+                        <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.all_enemy_money }}</td>
+                        <td {% if date.current_month %}class="bg-primary" style="background: #fbfd83; color: black; font-weight: bold"{% else %}style="background: #E2FADB;" {% endif %}>{{ date.all_money }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-md-4">
+        <h2>Услуги, улица</h2>
+            <table class="table table-condensed table-bordered small table-striped table-hover" id="ServiceStreetTable">
+                <thead>
+                <tr style="background: #E2FADB;">
+                    <th>Услуга</th>
+                    <th>Шт</th>
+                    <th>Руб</th>
+                </tr>
+                </thead>
+                {% for price in price_id_chart_street %}
+                <tr>
+                    <td>{{ price.name }}</td>
+                    <td>{{ price.count }}</td>
+                    <td>{{ price.sum }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+                <h2>Услуги, парк</h2>
+            <table class="table table-condensed table-bordered small table-striped table-hover" id="ServiceParkTable">
+                <thead>
+                <tr style="background: #E2FADB;">
+                    <th>Услуга</th>
+                    <th>Шт</th>
+                    <th>Руб</th>
+                </tr>
+                </thead>
+                    {% for price in price_id_chart_park %}
+                <tr>
+                    <td>{{ price.name }}</td>
+                    <td>{{ price.count }}</td>
+                    <td>{{ price.sum }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-md-4">
+            <h2>Типы оплаты, улица</h2>
+            <table class="table table-condensed table-bordered small table-striped table-hover" id="StreetPayTypeTable">
+                <thead>
+                <tr style="background: #E2FADB;">
+                    <th>Тип оплаты</th>
+                    <th>Шт</th>
+                    <th>Руб</th>
+                </tr>
+                </thead>
+                    <tr>
+                        <td>Наличные</td>
+                        <td>{{ street_cash_cnt }}</td>
+                        <td>{{ street_cash_rub }}</td>
+                    </tr>
+                <tr>
+                        <td>Терминал</td>
+                        <td>{{ street_terminal_cnt }}</td>
+                        <td>{{ street_terminal_rub }}</td>
+                    </tr>
+                <tr>
+                        <td>Безнал</td>
+                        <td>{{ street_bnal_cnt }}</td>
+                        <td>{{ street_bnal_rub }}</td>
+                    </tr>
+                <tr>
+                        <td>Парк</td>
+                        <td>{{ street_park_cnt }}</td>
+                        <td>{{ street_park_rub }}</td>
+                    </tr>
+            </table>
+            <h2>Типы оплаты, парк</h2>
+            <table class="table table-condensed table-bordered small table-striped table-hover" id="ParkPayTypeTable">
+                <thead>
+                <tr style="background: #E2FADB;">
+                    <th>Тип оплаты</th>
+                    <th>Шт</th>
+                    <th>Руб</th>
+                </tr>
+                </thead>
+                    <tr>
+                        <td>Наличные</td>
+                        <td>{{ park_cash_cnt }}</td>
+                        <td>{{ park_cash_rub }}</td>
+                    </tr>
+                <tr>
+                        <td>Терминал</td>
+                        <td>{{ park_terminal_cnt }}</td>
+                        <td>{{ park_terminal_rub }}</td>
+                    </tr>
+                <tr>
+                        <td>Безнал</td>
+                        <td>{{ park_bnal_cnt }}</td>
+                        <td>{{ park_bnal_rub }}</td>
+                    </tr>
+                <tr>
+                        <td>Парк</td>
+                        <td>{{ park_park_cnt }}</td>
+                        <td>{{ park_park_rub }}</td>
+                    </tr>
+            </table>
+        </div>
+    {% endspaceless %}
+    <script type="text/javascript">
+        {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+        $(document).ready(function () {
+                $("#SummaryTable").tablesorter({sortList: [[0, 0]]});
+                $("#ServiceStreetTable").tablesorter({sortList: [[2, 1]]});
+                $("#ServiceParkTable").tablesorter({sortList: [[2, 1]]});
+                $("#StreetPayTypeTable").tablesorter({sortList: [[2, 1]]});
+                $("#ParkPayTypeTable").tablesorter({sortList: [[2, 1]]});
+            }
+        );
+    </script>
+{% endblock %}

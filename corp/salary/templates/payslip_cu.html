@@ -1,0 +1,376 @@
+{% extends "base_salary.html" %}
+{% load staticfiles %}
+{% block title %}
+    ЗП
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+            <form role="form" class="form-inline" method="POST" action="" id="payslip_form">{% csrf_token %}
+                <h2>{{ driver_fullname }}&nbsp;<span class="label label-warning">{{ salary_date|date:"F" }}</span>&nbsp;<span
+                        class="label label-info">{{ salary_date|date:"Y" }}</span></h2>
+                <div class="row">
+                    <div class="col-md-4" style="background: #e7f7ff">
+                        <h3>Начислено</h3>
+                        <table class="table table-condensed table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Заказы</th>
+                                <th>Бензин</th>
+                                <th>Доначислено</th>
+                            </tr>
+                            </thead>
+                            <tr>
+                                <td>
+                                    <table class="table table-condensed table-bordered">
+                                        <thead>
+                                        <tr>
+                                            <th>Вид</th>
+                                            <th>Сумма</th>
+                                        </tr>
+                                        </thead>
+                                        <tr>
+                                            <td>
+                                                <nobr>Все заказы</nobr>
+                                            </td>
+                                            <td>{{ salary_nal_term_corp }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Стойка</td>
+                                            <td>{{ salary_airport }}</td>
+                                        </tr>
+                                        <tr style="font-weight: bold">
+                                            <td>Итого</td>
+                                            <td><input type="hidden" class="form-control" id="salary_all_and_airport"
+                                                       value="{{ salary_all_and_airport }}">{{ salary_all_and_airport }}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td>
+                                    <table class="table table-condensed table-bordered">
+                                        <thead>
+                                        <tr>
+                                            <th>№</th>
+                                            <th>Дата смены</th>
+                                            <th>Пробег, км</th>
+                                            <th>Расход,л</th>
+                                        </tr>
+                                        </thead>
+                                        {% for smena in smenas_chart %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>
+                                                    <nobr>{{ smena.date|date:"j.n.Y" }}</nobr>
+                                                </td>
+                                                <td>{{ smena.run }}</td>
+                                                <td>{{ smena.spending_fuel_litres }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        <tr style="font-weight: bold">
+                                            <td colspan="2">Итого</td>
+                                            <td>{{ smenas_run_result }}</td>
+                                            <td>{{ spending_fuel_litres_result }}</td>
+                                        </tr>
+                                        <tr style="font-weight: bold">
+                                            <td colspan="3">(Пробег/10-Л)*<span class="label label-warning"
+                                                                                style="font-size: 11px;">{{ fuel_rate }}</span>
+                                            </td>
+                                            <td><input type="text" class="form-control" id="fuel_bonus"
+                                                       name="fuel_bonus"
+                                                       value="{{ fuel_bonus }}" style="width: 80px;"></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td><input type="text" class="form-control" id="salary_add" name="salary_add"
+                                           value="{{ salary_add }}" style="width:120px;"><Br>
+                                    <textarea class="form-control" style="width: 120px; margin-top: 9px;" rows="3"
+                                              name="salary_add_comment"
+                                              placeholder="Комментарий к доначислено">{{ salary_add_comment }}</textarea>
+                                </td>
+                            </tr>
+                            <tr style="font-weight: bold; background: #b4dbf7">
+                                <td colspan="2">Итого</td>
+                                <td align="center"><input type="hidden" class="form-control" id="base_accrued_result"
+                                                          value="{{ accrued_result }}" style="width: 120px;">
+                                    <input type="text" class="form-control" id="accrued_result" name="accrued_result"
+                                           value="{{ accrued_result }}" style="width: 120px;" readonly></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-5" style="background: #fffce7">
+                        <h3>Удержано</h3>
+                        <table class="table table-condensed table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Жалобы</th>
+                                <th>ГИБДД</th>
+                                <th>Компания</th>
+                            </tr>
+                            </thead>
+                            <tr>
+                                <td>
+                                    <table class="table table-condensed table-bordered">
+                                        <thead>
+                                        <tr>
+                                            <th>№</th>
+                                            <th>Дата</th>
+                                            <th>Суть</th>
+                                            <th>Ответ</th>
+                                            <th>Сумма</th>
+                                        </tr>
+                                        </thead>
+                                        {% for penalty in complaints_penalty_chart %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ penalty.complaint_date|date:"j.m.Y" }}</td>
+                                                <td align="center"><span type="button" class="btn btn-default"
+                                                                         data-container="body" data-toggle="popover"
+                                                                         data-placement="bottom"
+                                                                         data-content="{{ penalty.operator_name }}:&nbsp;{{ penalty.complaint_text }}"><span
+                                                        class="glyphicon glyphicon-search"></span></span></td>
+                                                <td align="center"><span type="button" class="btn btn-default"
+                                                                         data-container="body" data-toggle="popover"
+                                                                         data-placement="bottom"
+                                                                         data-content="{{ penalty.complaint_date_close }}:&nbsp;
+                                                                                 {% if penalty.complaint_answer %}{{ penalty.complaint_answer }}{% else %}Без ответа{% endif %}"><span
+                                                        class="glyphicon glyphicon-search"></span></span></td>
+                                                <td style="text-align: center">{{ penalty.complaint_penalty }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        <tr style="font-weight: bold">
+                                            <td colspan="4">Итого</td>
+                                            <td style="text-align: center">{{ complaints_penalty_result }}</td>
+                                        </tr>
+                                        <tr style="font-weight: bold">
+                                            <td colspan="4">Итого выговоров, шт</td>
+                                            <td style="text-align: center">{{ complaints_rebuke }}</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td>
+                                    <table class="table table-condensed table-bordered">
+                                        <thead>
+                                        <tr style="white-space: nowrap;">
+                                            <th style="text-align: center">№</th>
+                                            <th><span class="glyphicon glyphicon-time"></span> Наруш</th>
+                                            <th style="text-align: center"><span
+                                                    class="glyphicon glyphicon-info-sign"></span></th>
+                                            <th style="text-align: center">Сумма</th>
+                                        </tr>
+                                        </thead>
+                                        {% for gibdd in gibdd_chart %}
+                                            <tr>
+                                                <td style="text-align: center">{{ forloop.counter }}</td>
+                                                <td>{{ gibdd.incident_date|date:"j.m.Y G:i" }}</td>
+                                                <td align="center"><span type="button" class="btn btn-default"
+                                                                         data-container="body" data-toggle="popover"
+                                                                         data-placement="bottom"
+                                                                         data-content="##&nbsp;ДАТА ДОКУМЕНТА:&nbsp;{{ gibdd.date }} ##&nbsp;АВТО:&nbsp;{{ gibdd.get_car_number }} ##&nbsp;МЕСТО НАРУШЕНИЯ:&nbsp;{{ gibdd.incident_place }} ##&nbsp;СУТЬ НАРУШЕНИЯ:&nbsp;{{ gibdd.incident_type }} ##&nbsp;СКОРОСТЬ:&nbsp;{{ gibdd.incident_speed }} РАЗР.СКОРОСТЬ:&nbsp;{{ gibdd.speed_recommend }} ##&nbsp;КОММЕНТАРИЙ:&nbsp;
+                                                                                 {% if gibdd.manager_comment %}{{ gibdd.manager_comment }}{% else %}Без ответа{% endif %}"><span
+                                                        class="glyphicon glyphicon-search"></span></span></td>
+                                                <td style="text-align: center">{{ gibdd.penalty_gibdd }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        <tr style="font-weight: bold">
+                                            <td colspan="3">Итого</td>
+                                            <td style="text-align: center">{{ gibdd_penalty_result }}</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            <td>
+                                                                    <table class="table table-condensed table-bordered">
+                                        <thead>
+                                        <tr style="white-space: nowrap;">
+                                            <th style="text-align: center">№</th>
+                                            <th><span class="glyphicon glyphicon-time"></span> Наруш</th>
+                                            <th style="text-align: center"><span
+                                                    class="glyphicon glyphicon-info-sign"></span></th>
+                                            <th style="text-align: center">Сумма</th>
+                                            <!--<th style="text-align: center">Опл</th>-->
+                                        </tr>
+                                        </thead>
+                                        {% for penalty in company_penalty_chart %}
+                                            <tr>
+                                                <td style="text-align: center">{{ forloop.counter }}</td>
+                                                <td>{{ penalty.incident_date|date:"j.m.Y G:i" }}</td>
+                                                <td align="center"><span type="button" class="btn btn-default"
+                                                                         data-container="body" data-toggle="popover"
+                                                                         data-placement="bottom"
+                                                                         data-content="##&nbsp;ДАТА ДОКУМЕНТА:&nbsp;{{ penalty.date }} ##&nbsp;АВТО:&nbsp;{{ penalty.get_car_number }} ##&nbsp;МЕСТО НАРУШЕНИЯ:&nbsp;{{ penalty.incident_place }} ##&nbsp;СУТЬ НАРУШЕНИЯ:&nbsp;{{ penalty.incident_type }} ##&nbsp;СКОРОСТЬ:&nbsp;{{ penalty.incident_speed }} РАЗР.СКОРОСТЬ:&nbsp;{{ penalty.speed_recommend }} ##&nbsp;КОММЕНТАРИЙ:&nbsp;
+                                                                                 {% if penalty.manager_comment %}{{ penalty.manager_comment }}{% else %}Без ответа{% endif %}"><span
+                                                        class="glyphicon glyphicon-search"></span></span></td>
+                                                <td style="text-align: center">{{ penalty.penalty_company }}</td>
+                                                <!--<td style="text-align: center; {% if penalty.penalty_driver_paid %}background: #6dda35;{% else %}background: #ff5e00;{% endif %} ">{% if penalty.penalty_driver_paid %}<span class="glyphicon glyphicon-ok"></span>{% else %}<span class="glyphicon glyphicon-remove"></span>{% endif %}</td>-->
+                                            </tr>
+                                        {% endfor %}
+                                        <tr style="font-weight: bold">
+                                            <td colspan="3">Итого</td>
+                                            <td style="text-align: center">{{ company_penalty_result }}</td>
+                                        </tr>
+                                    </table>
+                            </td>
+                            </tr>
+                            <tr style="font-weight: bold; background: #ffedad">
+                                <td colspan="2">Итого</td>
+                                <td align="center"><input type="text" class="form-control" id="hold_result"
+                                                          name="hold_result"
+                                                          value="{{ hold_result }}" style="width: 100%" readonly></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-3" style="background: #e3f7e8">
+                        <h3>Выплачено</h3>
+                        <table class="table table-condensed table-bordered">
+                            <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Дата</th>
+                                <th>Коммент</th>
+                                <th>Сумма</th>
+                                <th>Удал</th>
+                            </tr>
+                            </thead>
+                            {% for payment in payment_chart %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ payment.date }}</td>
+                                    <td>{{ payment.sum_comment }}</td>
+                                    <td>{{ payment.sum }}</td>
+                                    <td>
+                                        <a onclick="return confirmDeletePayment({{ payment.sum }}, '{{ payment.date }}')"
+                                           href="/payment_del/{{ payment.payment_id }}/{{ driver_id }}/{{ salary_id }}"
+                                           class="btn btn-danger"><span
+                                                class="glyphicon glyphicon-remove"></span></a></td>
+                                </tr>
+                            {% endfor %}
+                            <tr style="font-weight: bold; background: #ccf0b9">
+                                <td colspan="3">Итого</td>
+                                <td colspan="2">{{ payment_result }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-3"><h3>Итоги</h3>
+                        <div class="input-group" style="width: 100%">
+                                                <span class="input-group-addon"
+                                                      id="css-proceeds-calculate">Начислено</span>
+                            <input type="text" class="form-control" id="accrued_result_copy"
+                                   name="accrued_result_copy"
+                                   value="{{ accrued_result }}"
+                                   style="width: 100%; text-align: right; font-weight: bold;" readonly></div>
+                        <br>
+                        <div class="input-group has-warning" style="margin-top: 9px; width: 100%;">
+                                                    <span class="input-group-addon"
+                                                          id="css-proceeds-calculate">Удержано</span>
+                            <input type="text" class="form-control" id="hold_result"
+                                   name="hold_result"
+                                   value="{{ hold_result }}"
+                                   style="width: 100%; text-align: right; font-weight: bold;" readonly></div>
+                        <Br>
+                        <div class="input-group has-success" style="margin-top: 9px; width: 100%;">
+                                                    <span class="input-group-addon"
+                                                          id="css-proceeds-calculate">Выплачено</span>
+                            <input type="text" class="form-control" id="payment_result"
+                                   name="payment_result"
+                                   value="{{ payment_result }}"
+                                   style="width: 100%; text-align: right; font-weight: bold;" readonly></div>
+                    </div>
+                    <div class="col-md-2"><h3>Долг за предприятием</h3>
+                        <input type="text" class="form-control alert-danger" id="debt_sum" name="debt_sum"
+                               value="{{ debt_sum }}" style="width:100%; font-size: 70px; height: 120px" readonly></div>
+                    <div class="col-md-4"><h3>Выплата <span class="text-success" style="font-size: 17px;">[Сейчас на руках: <strong>{{ cash_on_hands }} ₽</strong>]</span>
+                    </h3>
+                        <input type="text" class="form-control alert-success" id="sum" name="sum"
+                               value="{{ sum }}" style="width:40%; font-size: 70px; height: 120px">&nbsp;
+                        <textarea class="form-control" style="width: 40%; font-size: 25px" rows="3"
+                                  name="sum_comment" id="sum_comment"
+                                  placeholder="Комментарий к выплате">{{ sum_comment }}</textarea>
+                        <div style="display: block; width: 18%; float: right; border: 2px black;">
+                            <a onclick="go_comment('Карточка');" href="#" class="btn btn-default"
+                               style="width: 100%; margin-bottom: 8px;">Карточка</a>
+                            <a onclick="go_comment('Наличные');" href="#" class="btn btn-default"
+                               style="width: 100%; margin-bottom: 8px;">Наличные</a>
+                            <a onclick="go_comment('Из смены');" href="#" class="btn btn-default" style="width: 100%">Из
+                                смены</a>
+                        </div>
+                    </div>
+                    <div class="col-md-2"><h3>Долг после выплаты</h3>
+                        <input type="text" class="form-control alert-warning" id="result_debt_sum"
+                               name="result_debt_sum"
+                               value="" style="width:100%; font-size: 70px; height: 120px" readonly></div>
+                    <div class="col-md-1"><h3>Закрыть</h3>
+                        <input type="checkbox" id="is_payment" name="is_payment"
+                               {% if is_payment %}checked="checked"{% endif %} style="height: 115px; width: 115px;">
+                    </div>
+                </div>
+                <br>
+                <nobr><a href="/salary#{{ driver_id }}" class="btn btn-info text-center btn-lg"
+                         style="margin-top: -5px; width: 25%">Вернуться</a>&nbsp;<button
+                        type="submit" class="btn btn-primary text-center btn-lg" style="margin-top: -5px; width: 75%">
+                    Выплатить
+                </button>
+                </nobr>
+            </form>
+            <script type="text/javascript">
+                var payslip_form = document.getElementById('payslip_form');
+
+                payslip_form.oninput = function () {
+                    calculate_payslip();
+                };
+                calculate_payslip();
+
+                function calculate_payslip() {
+                    var salary_all_and_airport = parseInt(document.getElementById('salary_all_and_airport').value);
+                    var fuel_bonus = parseInt(document.getElementById('fuel_bonus').value);
+                    var salary_add = parseInt(document.getElementById('salary_add').value);
+                    var payment_result = parseInt(document.getElementById('payment_result').value);
+                    var hold_result = parseInt(document.getElementById('hold_result').value);
+                    var sum = parseInt(document.getElementById('sum').value);
+
+                    /* Если пусто, то 0 */
+                    if (isNaN(salary_all_and_airport)) salary_all_and_airport = 0;
+                    if (isNaN(salary_add)) salary_add = 0;
+                    if (isNaN(hold_result)) hold_result = 0;
+                    if (isNaN(fuel_bonus)) fuel_bonus = 0;
+                    if (isNaN(sum)) sum = 0;
+
+                    /* Расчеты */
+                    var accured_total_result = salary_all_and_airport + fuel_bonus + salary_add;
+                    var debt_sum_result = accured_total_result - payment_result - hold_result;
+                    var result_debt_sum_result = debt_sum_result - sum;
+                    if (isNaN(accured_total_result)) {
+                        document.getElementById('accrued_result').value = '';
+                        document.getElementById('accrued_result_copy').value = '';
+                    } else {
+                        document.getElementById('accrued_result').value = accured_total_result;
+                        document.getElementById('accrued_result_copy').value = accured_total_result;
+                    }
+                    if (isNaN(debt_sum_result)) {
+                        document.getElementById('debt_sum').value = '';
+                    } else {
+                        document.getElementById('debt_sum').value = debt_sum_result;
+                    }
+                    if (isNaN(debt_sum_result)) {
+                        document.getElementById('result_debt_sum').value = '';
+                    } else {
+                        document.getElementById('result_debt_sum').value = result_debt_sum_result;
+                    }
+                    if (result_debt_sum_result) {
+                        document.getElementById('is_payment').checked = false;
+                    } else {
+                        document.getElementById('is_payment').checked = true;
+                    }
+                }
+
+                /* Подстановка комментария */
+                function go_comment(comment) {
+                    document.getElementById('sum_comment').value = comment;
+                }
+            </script>
+        {% endif %}
+    {% endspaceless %}
+{% endblock %}

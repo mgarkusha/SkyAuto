@@ -1,0 +1,105 @@
+{% extends "base_stats.html" %}
+{% load staticfiles %}
+{% block title %}
+    Stat
+{% endblock %}
+{% block content %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load("current", {packages: ['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var data = google.visualization.arrayToDataTable([
+                ['ДЕНЬ', 'ИТОГО', 'НАЛ', 'ТЕРМ', 'САЙТ', 'Б.НАЛ', 'КОРП.допл'],
+                {% for date in date_chart reversed %}['{{ date.day|date:"j" }}', {{ date.all_money }}, {{ date.all_money_cash }}, {{ date.all_money_terminal }}, {{ date.all_money_site_pay }}, {{ date.all_money_corp }}, {{ date.all_money_corp_no_inn }}]{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]);
+
+            var options = {
+                title: 'ВЫРУЧКА {{ current_day|date:"F Y" }}',
+                curveType: 'function',
+                height: 350,
+                legend: {position: 'bottom'}
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+            chart.draw(data, options);
+        }
+    </script>
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <span style="font-size: 20px">{{ current_day|date:"Y" }}</span>: {% for month in month_list %}
+                    <a href="/stat/billing_current_m/{{ month|date:"n" }}"
+                       class="btn {% if month|date:"F" == current_day|date:"F" %}btn-warning{% else %}btn-info{% endif %}">
+                        {{ month|date:"F" }}</a>&nbsp;{% endfor %}
+                </div>
+                <Br><Br>
+                <div class="col-md-12">
+                    <div id="curve_chart" style="width: 100%; "></div>
+                    <table class="table table-condensed table-bordered small">
+                        {% for month in month_chart %}
+                            <tr {% if month.current_month %}class="bg-info" style="font-weight: bold" {% endif %}>
+                                <td>{{ month.month|date:"F Y" }}</td>
+                                <td>{{ month.all_money }}</td>
+                                <td>{{ month.all_orders }}</td>
+                                <td>{{ month.all_money_cash }}</td>
+                                <td>{{ month.all_orders_cash }}</td>
+                                <td>{{ month.all_money_terminal }}</td>
+                                <td>{{ month.all_orders_terminal }}</td>
+                                <td>{{ month.all_money_site_pay }}</td>
+                                <td>{{ month.all_orders_site_pay }}</td>
+                                <td>{{ month.all_money_corp }}</td>
+                                <td>{{ month.all_orders_corp }}</td>
+                                <td>{{ month.all_money_corp_no_inn }}</td>
+                                <td>{{ month.all_orders_corp_no_inn }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr style="background: #E2FADB;">
+                            <td>ДЕНЬ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> Σ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> ШТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> НАЛ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> НАЛ.ШТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> ТЕРМ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> ТЕРМ.ШТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> САЙТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> САЙТ.ШТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> Б.НАЛ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> Б.НАЛ.ШТ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> КОРП.допл</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> КОРП.допл.ШТ</td>
+                        </tr>
+                        {% for date in date_chart %}
+                            <tr {% if date.current_day %}class="bg-info" style="font-weight: bold"{% endif %}>
+                                <td>{{ date.day|date:"d b, D" }}</td>
+                                <td>{{ date.all_money }}</td>
+                                <td>{{ date.all_orders }}</td>
+                                <td>{{ date.all_money_cash }}</td>
+                                <td>{{ date.all_orders_cash }}</td>
+                                <td>{{ date.all_money_terminal }}</td>
+                                <td>{{ date.all_orders_terminal }}</td>
+                                <td>{{ date.all_money_site_pay }}</td>
+                                <td>{{ date.all_orders_site_pay }}</td>
+                                <td>{{ date.all_money_corp }}</td>
+                                <td>{{ date.all_orders_corp }}</td>
+                                <td>{{ date.all_money_corp_no_inn }}</td>
+                                <td>{{ date.all_orders_corp_no_inn }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    {% endspaceless %}
+    <script type="text/javascript">
+        {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+        $(document).ready(function () {
+                $("#CorpTable").tablesorter({sortList: [[0, 0]]});
+            }
+        );
+    </script>
+{% endblock %}

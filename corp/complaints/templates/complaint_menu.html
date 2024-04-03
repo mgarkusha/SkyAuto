@@ -1,0 +1,17 @@
+<form class="inline-form" action="/complaint_create">
+    <button class="btn btn-danger btn-sm" type="submit">ПОЖАЛОВАТЬСЯ!</button>
+</form>
+<form class="inline-form" action="/">
+    <button class="btn btn btn-primary btn-sm {% if menu_complaint_active %}active{% endif %}" type="submit"><span class="glyphicon glyphicon-home"> ЖАЛОБЫ</span></button>
+</form>
+{% if user.is_authenticated %}
+<form class="inline-form" action="/complaint/stat">
+    <button class="btn btn-info btn-sm {% if stat_active %}active{% endif %}" type="submit">По Водителям</button>
+</form>
+<form class="inline-form" action="/complaint_view_archive">
+    <button class="btn btn-warning btn-sm {% if archive_active %}active{% endif %}" type="submit">Архив</button>
+</form>
+<form class="inline-form" action="/complaint_report">
+    <button class="btn btn-success btn-sm" type="submit">Отчёт</button>
+</form>
+{% endif %}

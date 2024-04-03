@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load bootstrap %}
+{% load staticfiles %}
+{% block title %}
+{% endblock %}
+{% block content %}
+    <h3>Рассмотрение жалобы № {{ complaint_number }} от {{ complaint_date }}</h3>
+    <form method="POST" action="" id="complaint_form">{% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel panel-danger">
+                    <div class="panel-heading">Жалоба</div>
+                    <div class="panel-body"><strong>{{ complaint_text }}</strong></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><h4>Выговор</h4>
+                        <input type="checkbox" id="rebuke" checked name="rebuke" style="height: 140px; width: 140px;"
+                               onclick="return false;">
+                    </div>
+                    <div class="col-md-5"><h4>Штраф, ₽</h4>
+                        <input type="text" class="form-control alert-warning" id="id_complaint_penalty"
+                               name="complaint_penalty"
+                               value="{% if complaint_penalty %}{{ complaint_penalty }}{% else %}0{% endif %}"
+                               style="width:100%; font-size: 70px; height: 142px">&nbsp;
+                    </div>
+                    <div class="col-md-4"><h4>&nbsp;</h4>
+                        <a onclick="go_penalty(0);" href="#" class="btn btn-default"
+                           style="width: 100%; margin-bottom: 3px; background: #ccf0b9; font-weight: bold;">ВЫГОВОР</a>
+                        <a onclick="go_penalty(100);" href="#" class="btn btn-default"
+                           style="width: 100%; margin-bottom: 3px; background: #dbdc07; font-weight: bold;">100</a>
+                        <a onclick="go_penalty(200);" href="#" class="btn btn-default"
+                           style="width: 100%; margin-bottom: 3px; background: #f0b319; font-weight: bold;">200</a>
+                        <a onclick="go_penalty(500);" href="#" class="btn btn-default"
+                           style="width: 100%; background: #ff713f; font-weight: bold;">500</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12"><textarea class="form-control" style="width: 100%"
+                                                     name="complaint_answer" placeholder="Ответ руководителя">{{ complaint_answer }}</textarea></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="panel panel-warning">
+                            <div class="panel-heading">Водитель</div>
+                            <div class="panel-body"><strong>{{ driver_name }}</strong></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="panel panel-warning">
+                            <div class="panel-heading">Номер машины</div>
+                            <div class="panel-body"><strong>{{ car_number }}</strong></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Диспетчер</div>
+                    <div class="panel-body"><strong>{{ operator_name }}</strong></div>
+                    <div class="panel-heading">Дата и время жалобы</div>
+                    <div class="panel-body"><strong>{{ complaint_date }}</strong></div>
+                </div>
+            </div>
+        </div>
+        <Br>
+        <div class="row">
+            <div class="col-md-6">
+                <button class="btn btn-success btn-block" type="submit" style="font-size: 20px;">Сохранить ответ
+                    и
+                    закрыть жалобу!
+                </button>
+            </div>
+            <div class="col-md-6">
+                {% if edit_marker %}<a href="#" onClick="history.go(-1)" class="btn btn-primary btn-block" style="font-size: 20px;">Вернуться к списку жалоб</a>{% else %}
+                <a href="#" onClick="history.go(-1)" class="btn btn-primary btn-block" style="font-size: 20px;">Вернуться к списку жалоб</a>{% endif %}
+            </div>
+        </div>
+    </form>
+    <script type="text/javascript">
+        var complaint_form = document.getElementById('complaint_form');
+        var complaint_penalty = parseInt(document.getElementById('id_complaint_penalty').value);
+        calculate_form();
+
+        complaint_form.oninput = function () {
+            calculate_form();
+        }
+
+        /* Подстановка штрафа */
+        function go_penalty(sum) {
+            document.getElementById('id_complaint_penalty').value = sum;
+            calculate_form();
+        }
+
+        function calculate_form() {
+            if (document.getElementById('id_complaint_penalty').value > 0) {
+                document.getElementById('rebuke').checked = false;
+            } else {
+                document.getElementById('rebuke').checked = true;
+                document.getElementById('id_complaint_penalty').value = 0;
+            }
+        }
+    </script>
+{% endblock %}

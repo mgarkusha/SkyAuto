@@ -1,0 +1,206 @@
+body {
+    padding-top: 70px;
+}
+
+.starter-template {
+    padding: 40px 15px;
+    text-align: center;
+}
+
+.inline-form {
+    display: inline-block;
+}
+
+.width100 {
+    width: 100%;
+}
+
+.width50 {
+    width: 50%;
+}
+
+/*Смена*/
+#css-proceeds-name {
+    width: 105px;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+#css-proceeds-orders {
+    width: 70px;
+    white-space: nowrap;
+}
+
+#css-proceeds-calculate {
+    width: 92px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+#css-spendings-name {
+    width: 90px;
+    text-align: left;
+}
+
+/* Customize the label (the container) */
+.container1 {
+  display: block;
+  position: relative;
+  padding-left: 15px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 17px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.container2 {
+  display: block;
+  position: relative;
+  padding-left: 15px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 17px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default radio button */
+.container1 input {
+  position: absolute;
+  opacity: 0;
+}
+
+.container2 input {
+  position: absolute;
+  opacity: 0;
+}
+
+/* Create a custom radio button */
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+  border-radius: 50%;
+}
+
+.checkmark2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 35px;
+  width: 35px;
+  background-color: #eee;
+  border-radius: 50%;
+    margin-top: -5px;
+}
+
+/* On mouse-over, add a grey background color */
+.container1:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+.container2:hover input ~ .checkmark2 {
+  background-color: #ccc;
+}
+
+/* When the radio button is checked, add a blue background */
+.container1 input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+
+.container2 input:checked ~ .checkmark2 {
+  background-color: #2196F3;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkmark2:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.container1 input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.container2 input:checked ~ .checkmark2:after {
+  display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.container1 .checkmark:after {
+  top: 9px;
+  left: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+/* Style the indicator 2 (dot/circle) */
+.container2 .checkmark2:after {
+  top: 10px;
+  left: 10px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: white;
+}
+
+/*Дорожный знак скорости*/
+#circle_red {
+    background: #cb241e;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    color:black;
+    text-align:center;
+    border: solid 3px white;
+    font-family:Segoe UI Light;
+    box-shadow:0px 0px 5px black;
+  cursor:pointer;
+}
+#circle_green {
+    background: #007007;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    color:black;
+    text-align:center;
+    border: solid 3px white;
+    font-family:Segoe UI Light;
+    box-shadow:0px 0px 5px black;
+  cursor:pointer;
+}
+#circle_red .innerTEXT{
+  position:relative;
+  top:4px;
+  /*left:-1px;*/
+  color:white;
+  font-weight: bold;
+  text-shadow:2px 2px 2px black;
+}
+
+#circle_green .innerTEXT{
+  position:relative;
+  top:4px;
+  /*left:-1px;*/
+  color:white;
+  font-weight: bold;
+  text-shadow:2px 2px 2px black;
+}

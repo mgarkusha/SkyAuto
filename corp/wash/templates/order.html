@@ -1,0 +1,481 @@
+{% extends "base_wash.html" %}
+{% load staticfiles %}
+{% block title %}
+    Мойка
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+        {% endif %}
+        <form role="form" class="form-inline" method="POST" action="" id="price_form">{% csrf_token %}
+            <input type="hidden" id="price_ids" name="price_ids">
+            <div class="row" style="margin-bottom: 20px;">
+                <div class="col-md-7">
+                    <div class="row" style="margin-bottom: 10px;">
+                        {% if order.id %}
+                            <h1 style="margin-left: 10px;">Редактирование заказа № {{ order.id }} от
+                                {{ order.dt|date:"d M H:i" }}</h1>
+                        {% else %}
+                            <h1 style="margin-left: 10px;">Новый заказ № {{ last_order_id }} от {{ current_day|date:"d F Y г." }}</h1>
+                        {% endif %}
+                        <div class="col-md-5"><h3>ГОС.НОМЕР</h3>
+                            <input type="text" class="form-control" id="new_car"
+                                   name="car_number"
+                                   value="{% if not order.park_car %}{{ order.car_number }}{% endif %}"
+                                   style="text-align: left; font-weight: bold; font-size: 40px; height: 65px; width: 100%;"
+                                   {% if order.park_car %}disabled{% endif %}>
+                        </div>
+                        <div class="col-md-2" align="center"><h3>Парковая</h3>
+                            <input type="checkbox" id="is_park_car" name="park_car" {% if order.park_car %}
+                                   checked="checked"{% endif %}
+                                   style="height: 60px; width: 60px;"></div>
+                        <div class="col-md-5"><h3>ПАРК.НОМЕР</h3>
+                            <select class="form-control" id="is_park_car_list" name="car_id"
+                                    style="width: 100%; font-size: 40px; height: 65px; font-weight: bold;"
+                                    {% if not order.park_car %}disabled{% endif %}>
+                                {% if order.park_car %}
+                                    <option value="{% if order.car_id %}{{ order.car_id }}{% else %}{% endif %}">{{ order.car_number }}</option>{% else %}
+                                    <option></option>{% endif %}
+                                {% for car in cars %}
+                                    <option {% if car.idcurrentdriver %}style="background: #b0f1bf;"{% endif %}
+                                            value="{{ car.id }}">{{ car.number }}
+                                        - {{ car.callsign }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <table class="table table-condensed table-bordered" style="font-size: 125%;" id="wash_table">
+                        <thead>
+                        <tr>
+                            <th style="text-align: center;"><div style="margin-bottom: 9px;">Услуга</div></th>
+                            <th style="text-align: center;"><span class="glyphicon glyphicon-time"><br>мин</span></th>
+                            <th style="text-align: center;"><span class="glyphicon glyphicon-ok" style="margin-bottom: 13px;"></span></th>
+                            <th id="th_Cars"
+                                style="background: rgba(81,238,241,0.44); text-align: center; height: 50px; width: 180px;">
+                                <label class="container2" style="margin-bottom: 7px;">
+                                    <input type="radio" name="car_type" id="car_type_Cars"
+                                           value="Cars" onclick="check_car_type(); calc_total()" {% if order.car_type == 'Cars' %}checked="checked"{% endif %}>&nbsp;ЛЕГКОВ<span
+                                        class="checkmark2"></span>
+                                </label></th>
+                            <th id="th_Crossover"
+                                style="background: rgba(237,225,121,0.54); text-align: center; height: 50px; width: 180px;">
+                                <label class="container2" style="margin-bottom: 7px;">
+                                    <input type="radio" name="car_type" id="car_type_Crossover"
+                                           value="Crossover"
+                                           onclick="check_car_type(); calc_total()"{% if order.car_type == 'Crossover' %}checked="checked"{% endif %}>&nbsp;КРОССОВ<span
+                                        class="checkmark2"></span>
+                                </label></th>
+                            <th id="th_SUV"
+                                style="background: #aee6b8; text-align: center; height: 50px; width: 180px;">
+                                <label class="container2" style="margin-bottom: 7px;">
+                                    <input type="radio" name="car_type" id="car_type_SUV"
+                                           value="SUV" onclick="check_car_type(); calc_total()"{% if order.car_type == 'SUV' %}checked="checked"{% endif %}>&nbsp;ВНЕДОРОЖ<span
+                                        class="checkmark2"></span>
+                                </label></th>
+                        </tr>
+                        </thead>
+                        <tr>
+                            <td colspan="6"
+                                style="background: rgba(225,168,95,0.4); text-align: center; font-size: 15px; font-weight: bold;">
+                                Основная
+                            </td>
+                        </tr>
+                        {% for group_main in price_chart_main %}
+                            <tr>
+                                <td><strong>{{ group_main.name }}</strong>{% if group_main.description %}
+                                    <ul>{% for descr in group_main.description %}
+                                        <li>{{ descr }}</li>{% endfor %}</ul>{% endif %}</td>
+                                <td style="text-align: center;" id="td_main_work_time_{{ group_main.id }}"><strong>{{ group_main.work_time }}</strong></td>
+                                <td align="center"><input type="checkbox" id="checkbox_main_{{ group_main.id }}"
+                                                          name="{{ group_main.id }}"
+                                                          style="height: 60px; width: 60px;" onchange="calc_total();" {% if group_main.checked %}checked="checked"{% endif %}>
+                                </td>
+                                <td class="td_main_Cars" id="td_main_Cars_{{ group_main.id }}"
+                                    style="background: rgba(81,238,241,0.44); text-align: center; font-size: 28px;">{{ group_main.price_car }}</td>
+                                <td class="td_main_Crossover" id="td_main_Crossover_{{ group_main.id }}"
+                                    style="background: rgba(237,225,121,0.54); text-align: center; font-size: 28px;">{{ group_main.price_crossover }}</td>
+                                <td class="td_main_SUV" id="td_main_SUV_{{ group_main.id }}"
+                                    style="background: #aee6b8; text-align: center; font-size: 28px;">{{ group_main.price_suv }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td colspan="6"
+                                style="background: rgba(225,168,95,0.4); text-align: center; font-size: 15px; font-weight: bold;">
+                                Комплекс
+                            </td>
+                        </tr>
+                        {% for group_complex in price_chart_complex %}
+                            <tr>
+                                <td><strong>{{ group_complex.name }}</strong>{% if group_complex.description %}
+                                    <ul>{% for descr in group_complex.description %}
+                                        <li>{{ descr }}</li>{% endfor %}</ul>{% endif %}</td>
+                                <td style="text-align: center;" id="td_complex_work_time_{{ group_complex.id }}"><strong>{{ group_complex.work_time }}</strong></td>
+                                <td align="center"><input type="checkbox" id="checkbox_complex_{{ group_complex.id }}"
+                                                          name="{{ group_complex.id }}"
+                                                          style="height: 60px; width: 60px;" onchange="calc_total();"{% if group_complex.checked %}checked="checked"{% endif %}>
+                                </td>
+                                <td class="td_complex_Cars" id="td_complex_Cars_{{ group_complex.id }}"
+                                    style="background: rgba(81,238,241,0.44); text-align: center; font-size: 28px;">{{ group_complex.price_car }}</td>
+                                <td class="td_complex_Crossover" id="td_complex_Crossover_{{ group_complex.id }}"
+                                    style="background: rgba(237,225,121,0.54); text-align: center; font-size: 28px;">{{ group_complex.price_crossover }}</td>
+                                <td class="td_complex_SUV" id="td_complex_SUV_{{ group_complex.id }}"
+                                    style="background: #aee6b8; text-align: center; font-size: 28px;">{{ group_complex.price_suv }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td colspan="6"
+                                style="background: rgba(225,168,95,0.4); text-align: center; font-size: 15px; font-weight: bold;">
+                                Дополнительные услуги
+                            </td>
+                        </tr>
+                        {% for group_additional in price_chart_additional %}
+                            <tr>
+                                <td><strong>{{ group_additional.name }}</strong>{% if group_additional.description %}
+                                    <ul>{% for descr in group_additional.description %}
+                                        <li>{{ descr }}</li>{% endfor %}</ul>{% endif %}</td>
+                                <td style="text-align: center;" id="td_additional_work_time_{{ group_additional.id }}"><strong>{{ group_additional.work_time }}</strong></td>
+                                <td align="center"><input type="checkbox"
+                                                          id="checkbox_additional_{{ group_additional.id }}"
+                                                          name="{{ group_additional.id }}"
+                                                          style="height: 60px; width: 60px;" onchange="calc_total();"{% if group_additional.checked %}checked="checked"{% endif %}>
+                                </td>
+                                <td class="td_additional_Cars" id="td_additional_Cars_{{ group_additional.id }}"
+                                    style="background: rgba(81,238,241,0.44); text-align: center; font-size: 28px;">{{ group_additional.price_car }}</td>
+                                <td class="td_additional_Crossover"
+                                    id="td_additional_Crossover_{{ group_additional.id }}"
+                                    style="background: rgba(237,225,121,0.54); text-align: center; font-size: 28px;">{{ group_additional.price_crossover }}</td>
+                                <td class="td_additional_SUV" id="td_additional_SUV_{{ group_additional.id }}"
+                                    style="background: #aee6b8; text-align: center; font-size: 28px;">{{ group_additional.price_suv }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    <div class="row">
+                        <div class="col-md-2"><p style="font-size: 17px; font-weight: bold;">Доп.услуги</p>
+                            <textarea class="form-control" style="width: 100%; font-size: 20px;" rows="3"
+                                      name="add_service" id="add_service"
+                                      placeholder="Доп.услуги">{{ order.add_service }}</textarea>
+                        </div>
+                        <div class="col-md-2"><p style="font-size: 17px; font-weight: bold;">Стоимость, ₽</p>
+                            <input type="text" class="form-control" id="add_price"
+                                   name="add_price"
+                                   oninput="calc_total()"
+                                   value="{{ order.add_price }}"
+                                   style="text-align: left; font-weight: bold; font-size: 40px; height: 97px; width: 100%;">
+                        </div>
+                        <div class="col-md-2"><p style="font-size: 17px; font-weight: bold;">Комментарий</p>
+                            <textarea class="form-control" style="width: 100%; font-size: 20px;" rows="3"
+                                      name="comment" id="comment"
+                                      placeholder="Комментарий">{{ order.comment }}</textarea>
+                        </div>
+                        <div class="col-md-2"><p style="font-size: 17px; font-weight: bold;">Оплата:</p>
+                            <label class="container1" style="margin-bottom: 5px;">
+                                <input type="radio" name="pay_type"
+                                       value="park" {% if order.pay_type == 'park' %}checked="checked"{% endif %}>&nbsp;&nbsp;&nbsp;Парк<span
+                                    class="checkmark"></span>
+                            </label>
+                            <label class="container1" style="margin-bottom: 5px;">
+                                <input type="radio" name="pay_type"
+                                       value="cash" {% if order.pay_type == 'cash' %}checked="checked"{% endif %}>&nbsp;&nbsp;&nbsp;Наличные<span
+                                    class="checkmark"></span>
+                            </label>
+                            <label class="container1" style="margin-bottom: 5px;">
+                                <input type="radio" name="pay_type"
+                                       value="terminal"
+                                       {% if order.pay_type == 'terminal' %}checked="checked"{% endif %}>&nbsp;&nbsp;&nbsp;Терминал<span
+                                    class="checkmark"></span>
+                            </label>
+                            <label class="container1" style="margin-bottom: 5px;">
+                                <input type="radio" name="pay_type"
+                                       value="bnal" {% if order.pay_type == 'bnal' %}checked="checked"{% endif %}>&nbsp;&nbsp;&nbsp;Безнал<span
+                                    class="checkmark"></span>
+                            </label>
+                        </div>
+                        <div class="col-md-2"><p style="font-size: 20px; font-weight: bold;">ИТОГО, ₽</p>
+                            <input type="text" class="form-control" id="sum"
+                                   name="sum"
+                                   value="{% if sum %}{{ sum }}{% else %}0{% endif %}"
+                                   style="text-align: left; font-weight: bold; font-size: 40px; height: 97px; width: 100%; background: #b7f1f1">
+                        </div>
+                        <div class="col-md-2"><p style="font-size: 20px; font-weight: bold;">ИТОГО, Мин</p>
+                            <input type="text" class="form-control" id="sum_time"
+                                   name="sum_time"
+                                   value="{% if sum_time %}{{ sum_time }}{% else %}0{% endif %}"
+                                   style="text-align: left; font-weight: bold; font-size: 40px; height: 97px; width: 100%; background: #b7f1f1">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary text-center btn-lg"
+                            style="margin-top: 10px; width: 100%">{% if order.id %}СОХРАНИТЬ{% else %}
+                        ОФОРМИТЬ{% endif %}
+                    </button>
+                </div>
+                <div class="col-md-5">
+                    <h1>Список заказов на {{ current_day|date:"d F Y г." }}</h1>
+                    <table class="table small table-condensed table-bordered table-striped table-hover"
+                           style="font-size: 125%;">
+                        <thead>
+                        <tr>
+                            <th style="text-align: center;"><span class="glyphicon glyphicon-calendar"></span></th>
+                            <th style="text-align: center;"><span class="glyphicon glyphicon-question-sign"></span></th>
+                            <th style="text-align: center;">Парк</th>
+                            <th style="text-align: center;">Тип</th>
+                            <th style="text-align: center;">Гос.номер</th>
+                            <th style="text-align: center;">Доп</th>
+                            <th style="text-align: center;">₽</th>
+                            <th style="text-align: center;"><span class="glyphicon glyphicon-cog"></span></th>
+                        </tr>
+                        </thead>
+                        {% for orderr in today_chart %}
+                            <tr {% if orderr.selected %}style="background: #e7edad;" {% endif %}  {% if orderr.block_time %}style="background: rgba(237,225,121,0.47);"{% endif %}>
+                                <td style="text-align: center;">
+                                    {% if orderr.selected %}
+                                        {% if orderr.block_time %}
+                                            <strong>{{ orderr.time|date:"H:i" }}</strong>
+                                            <input type="radio" name="order_time" {% if orderr.selected %}checked="checked"{% endif %} style="display: none;" value="{{ orderr.time|date:"Y-m-d H:i" }}">
+                                        {% else %}
+                                            <label class="container1" style="margin-bottom: 5px;">
+                                            <input type="radio" name="order_time"
+                                                   value="{{ orderr.time|date:"Y-m-d H:i" }}">&nbsp;{{ orderr.time|date:"H:i" }}<span
+                                                class="checkmark"></span>
+                                            </label>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if orderr.block_time and not order.id %}
+                                            <strong>{{ orderr.time|date:"H:i" }}</strong>
+                                            <input type="radio" name="order_time" style="display: none;" value="{{ orderr.time|date:"Y-m-d H:i" }}">
+                                        {% elif orderr.block_time and order.id %}
+                                            <label class="container1" style="margin-bottom: 5px;">
+                                            <input type="radio" name="order_time"
+                                                   value="{{ orderr.time|date:"Y-m-d H:i" }}">&nbsp;{{ orderr.time|date:"H:i" }}<span
+                                                class="checkmark"></span>
+                                            </label>
+                                        {% else %}
+                                            <label class="container1" style="margin-bottom: 5px;">
+                                            <input type="radio" name="order_time"
+                                                   value="{{ orderr.time|date:"Y-m-d H:i" }}">&nbsp;{{ orderr.time|date:"H:i" }}<span
+                                                class="checkmark"></span>
+                                            </label>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td align="center">{% if orderr.id %}<button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="left" data-content="{% for i in orderr.service_list %} # {{ i }}{% endfor %}"><span class="glyphicon glyphicon-search"></span></button>{% endif %}</td>
+                                <td align="center">{% if orderr.park %}
+                                    <span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
+                                <td>{{ orderr.car_type }}</td>
+                                <td>{{ orderr.num|upper }}</td>
+                                <td align="center">{% if orderr.add_service %}
+                                    <span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
+                                <td>{{ orderr.sum }}</td>
+                                {% if orderr.id %}
+                                <td width="1%;" style="white-space: nowrap"><a href="/wash/{{ orderr.id }}"
+                                                                               class="btn btn-primary btn-sm"
+                                                                               type="submit"><span
+                                        class="glyphicon glyphicon-pencil"></span></a>&nbsp;<a
+                                        href="/wash/wash_delete/{{ orderr.id }}" class="btn btn-danger btn-sm"
+                                        onclick="return confirmDeleteWashOrder('{{ orderr.num|upper }}', '{{ orderr.dt|date:"d M H:i" }}')"
+                                        type="submit"><span class="glyphicon glyphicon-remove"></span></a></td>
+                            {% else %}
+                            <td>&nbsp;</td>
+                            {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </form>
+        <script type="text/javascript">
+            {#Закрашивание колонок#}
+
+            function check_car_type() {
+                {#$('#th_Cars').click(function () {#}
+                $( document ).ready(function() {
+                    if ($('#car_type_Cars').is(':checked')) {
+
+                        $(".th_Cars").css("opacity", "1");
+                        $(".td_main_Cars").css("opacity", "1");
+                        $(".td_complex_Cars").css("opacity", "1");
+                        $(".td_additional_Cars").css("opacity", "1");
+
+                        $(".th_Crossover").css("opacity", "1");
+                        $(".td_main_Crossover").css("opacity", "0.3");
+                        $(".td_complex_Crossover").css("opacity", "0.3");
+                        $(".td_additional_Crossover").css("opacity", "0.3");
+
+                        $(".th_SUV").css("opacity", "1");
+                        $(".td_main_SUV").css("opacity", "0.3");
+                        $(".td_complex_SUV").css("opacity", "0.3");
+                        $(".td_additional_SUV").css("opacity", "0.3");
+
+                    }
+                });
+
+                {#$('#th_Crossover').click(function () {#}
+                $( document ).ready(function() {
+                    if ($('#car_type_Crossover').is(':checked')) {
+
+                        $(".th_Cars").css("opacity", "1");
+                        $(".td_main_Cars").css("opacity", "0.3");
+                        $(".td_complex_Cars").css("opacity", "0.3");
+                        $(".td_additional_Cars").css("opacity", "0.3");
+
+                        $(".th_Crossover").css("opacity", "1");
+                        $(".td_main_Crossover").css("opacity", "1");
+                        $(".td_complex_Crossover").css("opacity", "1");
+                        $(".td_additional_Crossover").css("opacity", "1");
+
+                        $(".th_SUV").css("opacity", "1");
+                        $(".td_main_SUV").css("opacity", "0.3");
+                        $(".td_complex_SUV").css("opacity", "0.3");
+                        $(".td_additional_SUV").css("opacity", "0.3");
+                    }
+                });
+
+                {#$('#th_SUV').click(function () {#}
+                $( document ).ready(function() {
+                    if ($('#car_type_SUV').is(':checked')) {
+
+                        $(".th_Cars").css("opacity", "1");
+                        $(".td_main_Cars").css("opacity", "0.3");
+                        $(".td_complex_Cars").css("opacity", "0.3");
+                        $(".td_additional_Cars").css("opacity", "0.3");
+
+                        $(".th_Crossover").css("opacity", "1");
+                        $(".td_main_Crossover").css("opacity", "0.3");
+                        $(".td_complex_Crossover").css("opacity", "0.3");
+                        $(".td_additional_Crossover").css("opacity", "0.3");
+
+                        $(".th_SUV").css("opacity", "1");
+                        $(".td_main_SUV").css("opacity", "1");
+                        $(".td_complex_SUV").css("opacity", "1");
+                        $(".td_additional_SUV").css("opacity", "1");
+                    }
+                });
+            }
+
+            {#Парковая авто или нет#}
+
+            function park_car() {
+                $('#is_park_car').click(function () {
+                    if ($('#is_park_car').is(':checked')) {
+                        $("#is_park_car_list").prop("disabled", false);
+                        $("#new_car").prop("disabled", true)
+                    }
+                    else {
+                        $("#is_park_car_list").prop("disabled", true);
+                        $("#new_car").prop("disabled", false)
+                    }
+                })
+            }
+
+            {#Калькуляция итого#}
+
+            function calc_total() {
+                var sum = 0;
+                var sum_time = 0;
+                if ($('#car_type_Cars').is(':checked')) {
+                    {% for group_main in price_chart_main %}
+                        if ($('#checkbox_main_{{ group_main.id }}').is(':checked')) {
+                            sum += Number($("#td_main_Cars_{{ group_main.id }}").text());
+                            sum_time += Number($("#td_main_work_time_{{ group_main.id }}").text());
+                        }
+                    {% endfor %}
+                    {% for group_complex in price_chart_complex %}
+                        if ($('#checkbox_complex_{{ group_complex.id }}').is(':checked')) {
+                            sum += Number($("#td_complex_Cars_{{ group_complex.id }}").text());
+                            sum_time += Number($("#td_complex_work_time_{{ group_complex.id }}").text());
+                        }
+                    {% endfor %}
+                    {% for group_additional in price_chart_additional %}
+                        if ($('#checkbox_additional_{{ group_additional.id }}').is(':checked')) {
+                            sum += Number($("#td_additional_Cars_{{ group_additional.id }}").text());
+                            sum_time += Number($("#td_additional_work_time_{{ group_additional.id }}").text());
+                        }
+                    {% endfor %}
+                    sum += Number($("#add_price").val());
+                    $('#sum').val(sum);
+                    $('#sum_time').val(sum_time);
+                }
+                else if ($('#car_type_Crossover').is(':checked')) {
+                    {% for group_main in price_chart_main %}
+                        if ($('#checkbox_main_{{ group_main.id }}').is(':checked')) {
+                            sum += Number($("#td_main_Crossover_{{ group_main.id }}").text());
+                            sum_time += Number($("#td_main_work_time_{{ group_main.id }}").text());
+                        }
+                    {% endfor %}
+                    {% for group_complex in price_chart_complex %}
+                        if ($('#checkbox_complex_{{ group_complex.id }}').is(':checked')) {
+                            sum += Number($("#td_complex_Crossover_{{ group_complex.id }}").text());
+                            sum_time += Number($("#td_complex_work_time_{{ group_complex.id }}").text());
+                        }
+                    {% endfor %}
+                    {% for group_additional in price_chart_additional %}
+                        if ($('#checkbox_additional_{{ group_additional.id }}').is(':checked')) {
+                            sum += Number($("#td_additional_Crossover_{{ group_additional.id }}").text());
+                            sum_time += Number($("#td_additional_work_time_{{ group_additional.id }}").text());
+                        }
+                    {% endfor %}
+                    sum += Number($("#add_price").val());
+                    $('#sum').val(sum)
+                    $('#sum_time').val(sum_time);
+                }
+                else if ($('#car_type_SUV').is(':checked')) {
+                    {% for group_main in price_chart_main %}
+                        if ($('#checkbox_main_{{ group_main.id }}').is(':checked')) {
+                            sum += Number($("#td_main_SUV_{{ group_main.id }}").text());
+                            sum_time += Number($("#td_main_work_time_{{ group_main.id }}").text());
+                        }
+                    {% endfor %}
+                    {% for group_complex in price_chart_complex %}
+                        if ($('#checkbox_complex_{{ group_complex.id }}').is(':checked')) {
+                            sum += Number($("#td_complex_SUV_{{ group_complex.id }}").text());
+                            sum_time += Number($("#td_complex_work_time_{{ group_complex.id }}").text());
+                        }
+                    {% endfor %}
+                    {% for group_additional in price_chart_additional %}
+                        if ($('#checkbox_additional_{{ group_additional.id }}').is(':checked')) {
+                            sum += Number($("#td_additional_SUV_{{ group_additional.id }}").text());
+                            sum_time += Number($("#td_additional_work_time_{{ group_additional.id }}").text());
+                        }
+                    {% endfor %}
+                    sum += Number($("#add_price").val());
+                    $('#sum').val(sum)
+                    $('#sum_time').val(sum_time);
+                }
+                else if ($('#add_price').val()) {
+                    sum += Number($("#add_price").val());
+                    $('#sum').val(sum)
+                }
+                else {
+                    $('#sum').val(0);
+                    $('#sum_time').val(0);
+                    $('#add_price').val(0)
+                }
+                cheked_id_list_func()
+            }
+
+            {#Заполнение hidden input значениями выбранных id услуг #}
+
+            function cheked_id_list_func() {
+                var cheked_id_list = "";
+                $("input:checked").each(function (index, value) {
+                    if (value.name > 0) {
+                        cheked_id_list += value.name + ",";
+                    }
+                });
+                $('#price_ids').val(cheked_id_list);
+            }
+
+
+            {#Инициализация функций#}
+            $(document).ready(function () {
+                park_car();
+                calc_total();
+            });
+
+        $(document).ready(function () {
+            $('#th_Cars').click();
+        });
+
+        check_car_type();
+        </script>
+    {% endspaceless %}
+{% endblock %}

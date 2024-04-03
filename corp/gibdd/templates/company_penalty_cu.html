@@ -1,0 +1,246 @@
+{% extends "base_gibdd.html" %}
+{% load staticfiles %}
+{% block title %}
+    Штрафы КОМПАНИИ
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <form role="form" class="form-inline" method="POST" action="" id="gibdd_form">{% csrf_token %}
+            <div class="row" style="margin-top: 20px">
+                <div class="col-md-4">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading" align="center">
+                            <h3 class="panel-title">НАРУШЕНИЯ В КОМПАНИИ</h3>
+                        </div>
+                        <table class="table table-bordered small">
+                            <tr>
+                                <td>
+                                    <div class="input-group width100">
+                                    <span class="input-group-addon" style="width: 150px;"><span
+                                            class="glyphicon glyphicon-time"></span> Нарушения</span>
+                                        <input type="text" class="form-control"
+                                               name="incident_date" id="incident_date" value="{% if incident_marker %}{{ incident_date|date:"Y-m-d H:i:s" }}{% endif %}"
+                                               placeholder="ГГГГ-ММ-ДД ЧЧ:ММ:СС"><span class="input-group-btn"><button
+                                            class="btn btn-default width100" type="button"
+                                            onclick="incident_calculate()"><strong>Поиск</strong></button></span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="panel panel-success">
+                        <div class="panel-heading" align="center">
+                            <h3 class="panel-title">РЕЗУЛЬТАТ РАССМОТРЕНИЯ ШТРАФА</h3>
+                        </div>
+                        <table class="table table-bordered">
+                        <tr>
+                                <td colspan="2">
+                                    <div class="input-group width100">
+                                        <span class="input-group-addon" id="css-spendings-name" style="width: 150px;">Сумма штрафа</span>
+                                        <input type="text" class="form-control" id="penalty_company"
+                                               name="penalty_company" value="{{ penalty_company }}" placeholder=""
+                                                {% if not incident_marker %} disabled{% endif %}></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center" colspan="2">
+                                    <div class="input-group width100">
+                                        <a onclick="go_penalty('100');" class="btn btn-default"
+                                           style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #c6ff00;">100</a>
+                                        <a onclick="go_penalty('250');" class="btn btn-default"
+                                           style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #edff00;">250</a>
+                                        <a onclick="go_penalty('500');" class="btn btn-default"
+                                           style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #fff400;">500</a>
+                                        <a onclick="go_penalty('750');" class="btn btn-default"
+                                           style="width:53px; font-size: 17px; height: 40px; margin-right: 10px; background: #ffcc00;">750</a>
+                                        <a onclick="go_penalty('1000');" class="btn btn-default"
+                                           style="width:63px; font-size: 17px; height: 40px; margin-right: 10px; background: #ffb101;">1000</a>
+                                        <a onclick="go_penalty('2000');" class="btn btn-default"
+                                           style="width:63px; font-size: 17px; height: 40px; margin-right: 10px; background: #ff7500;">2000</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="font-weight: bold;">ОПЛАТА ВОДИТЕЛЕМ<br>
+                                    <input type="checkbox" id="penalty_driver_paid" name="penalty_driver_paid"
+                                           {% if penalty_driver_paid %}checked="checked"{% endif %}
+                                           style="height: 75px; width: 75px;" {% if not incident_marker %}
+                                           disabled{% endif %} onclick="return false;">
+                                </td>
+                                <td><textarea class="form-control" style="width: 100%; font-size: 20px;"
+                                              rows="3" name="manager_comment" id="manager_comment"
+                                              placeholder="Комментарий руководителя (не обязательно)"
+                                              {% if not incident_marker %}disabled{% endif %}>{{ manager_comment }}</textarea>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <nobr><a href="/company_penalty" class="btn btn-info text-center width50 btn-lg"
+                             style="margin-top: -5px">Вернуться</a>&nbsp;<button type="submit"
+                                                                                 class="btn btn-primary text-center width50 btn-lg"
+                                                                                 style="margin-top: -5px">
+                        Сохранить штраф
+                    </button>
+                    </nobr>
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" align="center">
+                            <h3 class="panel-title">ВОДИТЕЛИ И АВТО</h3>
+                        </div>
+                        <table class="table table-bordered ">
+                            {% if not incident_marker %}
+                                <tr>
+                                    <td>
+                                        <h2><span class="glyphicon glyphicon-arrow-left"></span> Введите дату
+                                            нарушения
+                                        </h2>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <thead>
+                                <tr>
+                                    <th width="150px" style="text-align: center">Авто</th>
+                                    <th>Водитель</th>
+                                    <th style="text-align: center">Статус</th>
+                                </tr>
+                                </thead>
+                                {% for driver in driver_chart %}
+                                    <tr style="padding: 5px;" {% if driver.state %}class="bg-success"{% endif %}>
+                                        <td style="padding: 5px; white-space: nowrap;">
+                                            <label class="container1" style="margin-bottom: 0;">
+                                                <input type="radio" name="idcar_driver_id"
+                                                       value="{{ driver.idcar }}_{{ driver.driver_id }}"
+                                                       {% if driver.checked %}checked{% endif %}>&nbsp;&nbsp;&nbsp;{{ driver.car_number }}<span
+                                                    class="checkmark"></span>
+                                            </label>
+                                        </td>
+                                        <td>{{ driver.fullname }}</td>
+                                        {% if driver.state %}
+                                            {% if driver.state == 2 %}
+                                                <td style="background: #6dda35; text-align: center">На линии</td>
+                                            {% elif driver.state == 3 %}
+                                                <td style="background: #2aabd2; text-align: center">На заказе</td>
+                                            {% elif driver.state == 4 %}
+                                                <td style="background: #ffc900; text-align: center">Перерыв</td>
+                                            {% elif driver.state == 5 %}
+                                                <td style="background: #dca7a7; text-align: center">Поломка</td>
+                                            {% elif driver.state == 7 %}
+                                                <td style="background: #4EB5E6; text-align: center">Назначен</td>
+                                            {% endif %}
+                                        {% else %}
+                                            <td style="background: #f4f4f4; text-align: center">Отключен</td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                                <tr style="padding: 5px;" class="bg-danger">
+                                    <td style="padding: 5px;">
+                                        <label class="container1" style="margin-bottom: 0;">
+                                            <input type="radio" name="car_id"
+                                                   value="000_000">&nbsp;&nbsp;&nbsp;Не известно<span
+                                                class="checkmark"></span>
+                                        </label>
+                                    </td>
+                                    <td>Не известно</td>
+                                    <td style="background: #f4f4f4; text-align: center">Отключен</td>
+
+                                </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading" align="center">
+                            <h4 class="panel-title">ТЕКУЩАЯ СКОРОСТЬ, КМ/Ч</h4>
+                        </div>
+                        <table class="table table-bordered small">
+                            <tr>
+                                <td>
+                                    <input type="text" class="form-control alert-danger" id="incident_speed"
+                                           name="incident_speed" value="{{ incident_speed }}"
+                                           style="width:100%; font-size: 20px; height: 45px; margin-right: 10px;"
+                                           placeholder="Введите превышенную скорость"
+                                           {% if not incident_marker %}disabled{% endif %}>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="panel-heading" align="center">
+                            <h4 class="panel-title">РАЗРЕШЕННАЯ СКОРОСТЬ, КМ/Ч</h4>
+                        </div>
+                        <table class="table table-bordered small">
+                            <tr>
+                                <td>
+                                    <input type="text" class="form-control alert-success" id="speed_recommend"
+                                           name="speed_recommend" value="{{ speed_recommend }}"
+                                           style="width:65px; font-size: 25px; height: 45px; margin-right: 10px; float: left;">
+                                    <a onclick="go_speed('40');" class="btn btn-default"
+                                       style="width:50px; font-size: 22px; height: 45px; margin-right: 10px; float: left;">40</a>
+                                    <a onclick="go_speed('60');" class="btn btn-default"
+                                       style="width:50px; font-size: 22px; height: 45px; margin-right: 10px; float: left;">60</a>
+                                    <a onclick="go_speed('80');" class="btn btn-default"
+                                       style="width:50px; font-size: 22px; height: 45px; margin-right: 10px; float: left;">80</a>
+                                    <a onclick="go_speed('90');" class="btn btn-default"
+                                       style="width:50px; font-size: 22px; height: 45px; margin-right: 10px; float: left;">90</a>
+                                    <a onclick="go_speed('110');" class="btn btn-default"
+                                       style="width:65px; font-size: 22px; height: 45px; float: left;">110</a>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="panel-heading" align="center">
+                            <h4 class="panel-title">МЕСТО НАРУЩЕНИЯ</h4>
+                        </div>
+                        <table class="table table-bordered small">
+                            <tr>
+                                <td>
+
+                                    <input type="text" class="form-control" id="incident_place"
+                                           name="incident_place" value="{{ incident_place }}" placeholder="Место нарушения (не обязательно)"
+                                            {% if not incident_marker %} disabled{% endif %} style="width: 100%; font-size: 20px; height: 45px; margin-right: 10px;">
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="panel-heading" align="center">
+                            <h4 class="panel-title">Другие нарушения</h4>
+                        </div>
+                        <table class="table table-bordered small">
+                            <tr>
+                                <td width="100%">
+                                <textarea class="form-control" style="width: 100%; margin-top: 9px; font-size: 20px;"
+                                          rows="3"
+                                          name="incident_type" id="incident_type"
+                                          placeholder="Суть нарушения (не обязательно)"
+                                          {% if not incident_marker %}disabled{% endif %}>{{ incident_type }}</textarea>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </form>
+    {% endspaceless %}
+    <script type="text/javascript">
+        /* Поиск работающих водителей по дате */
+        function incident_calculate() {
+            var incidentDate = document.getElementById("incident_date").value;
+            var new_url = incidentDate.replace(/\D/g, "/");
+            {#console.log(document.getElementById('incident_date').value)#}
+            {#console.log(new_url)#}
+            window.location.href = '/company_penalty_cu/' + new_url;
+        }
+
+
+        /* Подстановка суммы штрафа */
+        function go_penalty(penalty) {
+            document.getElementById('penalty_company').value = penalty;
+            calculate_penalty()
+        }
+
+        /* Подстановка разрешенной скорости */
+        function go_speed(speed) {
+            document.getElementById('speed_recommend').value = speed;
+        }
+
+
+    </script>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base_wash.html" %}
+{% load staticfiles %}
+{% block title %}
+    Мойка
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+            <form role="form" class="form-inline" method="POST" action="" id="price_form">{% csrf_token %}
+                <h2>Мойка. Администратор.</h2>
+                <div class="row">
+                    <div class="col-md-7">
+                        <h3>Прайс-лист</h3>
+                        <table class="table table-condensed table-bordered" style="font-size: 115%;">
+                            <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Наименование услуги</th>
+                                <th style="background: #b7f1f1; text-align: center;">Легковые</th>
+                                <th style="background: #e7edad; text-align: center;">Кроссоверы</th>
+                                <th style="background: #c0e6cb; text-align: center;">Внедорожники</th>
+                            </tr>
+                            </thead>
+                            <tr>
+                                <td colspan="5"
+                                    style="background: rgba(225,168,95,0.4); text-align: center; font-size: 15px; font-weight: bold;">
+                                    Основная
+                                </td>
+                            </tr>
+                            {% for group_main in price_chart_main %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><strong>{{ group_main.name }}</strong>{% if group_main.description %}
+                                        <ul>{% for descr in group_main.description %}
+                                            <li>{{ descr }}</li>{% endfor %}</ul>{% endif %}</td>
+                                    <td style="background: #b7f1f1;">{{ group_main.price_car }}</td>
+                                    <td style="background: #e7edad;">{{ group_main.price_crossover }}</td>
+                                    <td style="background: #c0e6cb;">{{ group_main.price_suv }}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <td colspan="5"
+                                    style="background: rgba(225,168,95,0.4); text-align: center; font-size: 15px; font-weight: bold;">
+                                    Комплекс
+                                </td>
+                            </tr>
+                            {% for group_complex in price_chart_complex %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><strong>{{ group_complex.name }}</strong>{% if group_complex.description %}
+                                        <ul>{% for descr in group_complex.description %}
+                                            <li>{{ descr }}</li>{% endfor %}</ul>{% endif %}</td>
+                                    <td style="background: #b7f1f1;">{{ group_complex.price_car }}</td>
+                                    <td style="background: #e7edad;">{{ group_complex.price_crossover }}</td>
+                                    <td style="background: #c0e6cb;">{{ group_complex.price_suv }}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <td colspan="5"
+                                    style="background: rgba(225,168,95,0.4); text-align: center; font-size: 15px; font-weight: bold;">
+                                    Дополнительные услуги
+                                </td>
+                            </tr>
+                            {% for group_additional in price_chart_additional %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><strong>{{ group_additional.name }}</strong>{% if group_additional.description %}
+                                        <ul>{% for descr in group_additional.description %}
+                                            <li>{{ descr }}</li>{% endfor %}</ul>{% endif %}</td>
+                                    <td style="background: #b7f1f1;">{{ group_additional.price_car }}</td>
+                                    <td style="background: #e7edad;">{{ group_additional.price_crossover }}</td>
+                                    <td style="background: #c0e6cb;">{{ group_additional.price_suv }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div class="col-md-5">
+                        <h3>Добавить услугу</h3>
+                        <div class="input-group" style="width: 100%">
+                                                <span style="width: 110px;" class="input-group-addon"
+                                                      id="css-proceeds-calculate">Наименование</span>
+                            <input type="text" class="form-control" id="name"
+                                   name="name"
+                                   value="{{ name }}"
+                                   style="width: 100%; text-align: left; font-weight: bold;">
+                        </div>
+                        <div class="input-group" style="margin-top: 9px; width: 100%;">
+                                                    <span style="width: 125px;" class="input-group-addon"
+                                                          id="css-proceeds-calculate">Описание</span>
+                            <textarea class="form-control" style="width: 100%; font-size: 20px;" rows="3"
+                                      name="description" id="description"
+                                      placeholder="Описание">{{ description }}</textarea>
+                        </div>
+                        <div class="input-group" style="margin-top: 9px; width: 100%;">
+                                                    <span style="width: 120px;" class="input-group-addon"
+                                                          id="css-proceeds-calculate">ЛЕГКОВЫЕ, ₽</span>
+                            <input type="text" class="form-control" id="price_car"
+                                   name="price_car"
+                                   value="{{ price_car }}"
+                                   style="width: 100%; text-align: left; font-weight: bold;">
+                            <span style="width: 120px;" class="input-group-addon"
+                                  id="css-proceeds-calculate">ПАРКЕТНИК, ₽</span>
+                            <input type="text" class="form-control" id="price_crossover"
+                                   name="price_crossover"
+                                   value="{{ price_crossover }}"
+                                   style="width: 100%; text-align: left; font-weight: bold;">
+                            <span style="width: 120px;" class="input-group-addon"
+                                  id="css-proceeds-calculate">ВНЕДОРОЖНИК, ₽</span>
+                            <input type="text" class="form-control" id="price_suv"
+                                   name="price_suv"
+                                   value="{{ price_suv }}"
+                                   style="width: 100%; text-align: left; font-weight: bold;">
+                        </div>
+                        <div class="input-group" style="margin-top: 9px; width: 100%">
+                                                <span style="width: 110px;" class="input-group-addon"
+                                                      id="css-proceeds-calculate">Время, потреченное на выполнение услуги, мин</span>
+                            <input type="text" class="form-control" id="work_time"
+                                   name="work_time"
+                                   value="{{ work_time }}"
+                                   style="width: 100%; text-align: left; font-weight: bold;">
+                        </div>
+                        <div class="input-group" style="margin-top: 9px; width: 100%;">
+                                                    <span style="width: 125px;" class="input-group-addon"
+                                                          id="css-proceeds-calculate">Группа услуги</span>
+                            <select class="form-control" id="group" name="group">
+                                <option value="1">Основная</option>
+                                <option value="2">Комплекс</option>
+                                <option value="3">Дополнительные услуги</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="margin-top: 9px; width: 100%;">
+                                                    <span style="width: 125px;" class="input-group-addon"
+                                                          id="css-proceeds-calculate">Комментарий</span>
+                            <textarea class="form-control" style="width: 100%; font-size: 20px;" rows="2"
+                                      name="comment" id="comment"
+                                      placeholder="Комментарий">{{ comment }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary text-center btn-lg"
+                                style="margin-top: 10px; width: 100%">Добавить
+                        </button>
+                    </div>
+                </div>
+            </form>
+        {% endif %}
+    {% endspaceless %}
+{% endblock %}

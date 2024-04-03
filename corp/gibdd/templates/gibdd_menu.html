@@ -1,0 +1,25 @@
+{% if user.is_authenticated %}
+    <form role="form" class="form-inline" method="POST" action="" id="gibdd_form">{% csrf_token %}
+    <a href="/gibdd_company_stat" class="btn btn-default btn-sm" type="submit">СВОДНАЯ</a>
+    <a href="/company_penalty" class="btn btn-success btn-sm" type="submit">КОМПАНИЯ</a>
+    <a href="/gibdd" class="btn btn-success btn-sm" type="submit">ГИБДД</a>
+    <a href="/gibdd/archive" class="btn btn-warning btn-sm" type="submit">АРХИВ</a>
+    <a href="/company_penalty_cu" class="btn btn-danger btn-sm" type="submit"><span
+            class="glyphicon glyphicon-plus"></span> ШТРАФ КОМПАНИИ</a>
+    <a href="/gibdd_cu" class="btn btn-primary btn-sm" type="submit"><span
+            class="glyphicon glyphicon-plus"></span> ШТРАФ ГИБДД</a>
+    <div class="input-group">
+      <input type="text" class="form-control" size="40" name="incident_number_in" id="incident_number_in">
+      <span class="input-group-btn">
+        <button class="btn btn-primary" type="button" onclick="incident_calculate()">Найти постановление</button>
+      </span>
+    </div>
+        </form>
+    <script type="text/javascript">
+         /* Поиск постановдения */
+        function incident_calculate() {
+            var incident_number = document.getElementById('incident_number_in').value;
+            window.location.href = '/find_incident_number/' + incident_number;
+        }
+    </script>
+{% endif %}

@@ -1,0 +1,112 @@
+{% extends "base_stats.html" %}
+{% load staticfiles %}
+{% block title %}
+    Stat
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-condensed table-bordered small">
+                        {% for year in year_chart %}
+                            <tr {% if year.current_year %}class="bg-info" style="font-weight: bold"{% endif %}>
+                                <td>{{ year.year }}</td>
+                                <td>-</td>
+                                <td>{{ year.smenas_count }}</td>
+                                <td>{{ year.all_money }}</td>
+                                <td>{{ year.proceeds_corporate_bank }}</td>
+                                <td>{{ year.proceeds_terminal }}</td>
+                                <td>{{ year.proceeds_cash }}</td>
+                                <td>{{ year.money_to_boss_fact }}</td>
+                                <td>{{ year.delta_all_vs_boss }}</td>
+                                <td {% if year.delta_delta_all_vs_boss_vs_spending != '0' %}class="bg-danger"
+                                    {% else %}class="bg-success"{% endif %}>{{ year.delta_delta_all_vs_boss_vs_spending }}</td>
+                                <td>{{ year.spending }}</td>
+                                <td>{{ year.spending_fuel_cash }}</td>
+                                <td>{{ year.spending_fuel_litres }}</td>
+                                <td>{{ year.km }}</td>
+                                <td>{{ year.spending_carwash }}</td>
+                                <td>{{ year.spending_carwash_bank }}</td>
+                                <td>{{ year.spending_parking }}</td>
+                                <td>{{ year.spending_washer }}</td>
+                                <td>{{ year.spending_to }}</td>
+                                <td>{{ year.spending_lamp }}</td>
+                                <td>{{ year.spending_repair }}</td>
+                                <td>{{ year.spending_etc }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr style="background: #E2FADB;">
+                            <td>ГОД</td>
+                            <td>МЕС</td>
+                            <td>СМЕН, шт</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> ИТОГО</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> БН</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> ТЕРМ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> НАЛ</td>
+                            <td><span class="glyphicon glyphicon-plus"></span> СДАЛ</td>
+                            <td>НАЛ <span class="glyphicon glyphicon-minus"></span> СДАЛ</td>
+                            <td>НАЛ<span class="glyphicon glyphicon-minus"></span> СДАЛ <span
+                                    class="glyphicon glyphicon-minus"></span> ЗАТР
+                            </td>
+                            <td><span class="glyphicon glyphicon-minus"></span> ИТОГО</td>
+                            <td><span class="glyphicon glyphicon-minus"></span> БЕНЗ</td>
+                            <td><span class="glyphicon glyphicon-minus"></span> БЕНЗ, л</td>
+                            <td>КМ</td>
+                            <td><span class="glyphicon glyphicon-minus"></span> МОЙКА</td>
+                            <td><span class="glyphicon glyphicon-minus"></span> МОЙКА (бн)</td>
+                            <td><span class="glyphicon glyphicon-minus"></span> ПАРК</td>
+                            <td><span class="glyphicon glyphicon-minus"></span> ОМЫВ</td>
+                            <td><span class="glyphicon glyphicon-minus"></span> ТО</td>
+                            <td><span class="glyphicon glyphicon-minus"></span> ЛАМП</td>
+                            <td><span class="glyphicon glyphicon-minus"></span> РЕМОНТ</td>
+                            <td><span class="glyphicon glyphicon-minus"></span> ПРОЧ</td>
+                        </tr>
+                        {% for date in date_chart %}
+                            <tr {% if date.current_month %}class="bg-info" style="font-weight: bold"{% endif %}>
+                                <td>{{ date.year }}</td>
+                                <td>{{ date.month|date:"F" }}</td>
+                                <td>{{ date.smenas_count }}</td>
+                                <td>{{ date.all_money }}</td>
+                                <td>{{ date.proceeds_corporate_bank }}</td>
+                                <td>{{ date.proceeds_terminal }}</td>
+                                <td>{{ date.proceeds_cash }}</td>
+                                <td>{{ date.money_to_boss_fact }}</td>
+                                <td>{{ date.delta_all_vs_boss }}</td>
+                                {% if date.delta_delta_all_vs_boss_vs_spending != '0' %}
+                                    <td class="bg-danger">{{ date.delta_delta_all_vs_boss_vs_spending }}<br>
+                                    {% for debt in date.debt_chart %}
+                                     <a href="/smena/{{ debt.id }}" class="btn btn-warning btn-xs">{{ debt.date }} - {{ debt.debt }} ₽</a><br>
+                                    {% endfor %}
+                                    </td>
+                                {% else %}
+                                    <td class="bg-success">{{ date.delta_delta_all_vs_boss_vs_spending }}</td>
+                                {% endif %}
+                                <td>{{ date.spending }}</td>
+                                <td>{{ date.spending_fuel_cash }}</td>
+                                <td>{{ date.spending_fuel_litres }}</td>
+                                <td>{{ date.km }}</td>
+                                <td>{{ date.spending_carwash }}</td>
+                                <td>{{ date.spending_carwash_bank }}</td>
+                                <td>{{ date.spending_parking }}</td>
+                                <td>{{ date.spending_washer }}</td>
+                                <td>{{ date.spending_to }}</td>
+                                <td>{{ date.spending_lamp }}</td>
+                                <td>{{ date.spending_repair }}</td>
+                                <td>{{ date.spending_etc }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    {% endspaceless %}
+    <script type="text/javascript">
+        {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+        $(document).ready(function () {
+                $("#SmenaTable").tablesorter({sortList: [[0, 0]]});
+            }
+        );
+        $('#example').popover(options)
+    </script>
+{% endblock %}

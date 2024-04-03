@@ -1,0 +1,99 @@
+{% extends "base_stats.html" %}
+{% load staticfiles %}
+{% block title %}
+    Stat
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        {% if user.groups.all.0.name == 'Администратор' %}
+            <div class="row">
+                <div class="col-md-2">
+                    <table class="table table-condensed table-bordered small table-striped table-hover">
+                        <thead>
+                        <tr style="background: #E2FADB;">
+                            <th>Год</th>
+                            <th>Мес</th>
+                            <th>шт</th>
+                            <th>₽</th>
+                            <th>%</th>
+                        </tr>
+                        </thead>
+                        {% for date in date_chart %}
+                            <tr onclick="document.location = '/stat/corp_y_m/{{ date.year }}/{{ date.month|date:"m" }}';" style="cursor: pointer;">
+                                <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.year }}</td>
+                                <td {% if date.current_month %}class="bg-primary"{% endif %}>
+                                    {{ date.month|date:"F" }}</td>
+                                <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.all_corp_orders_date_chart }}</td>
+                                <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.all_corp_money_date_chart }}</td>
+                                <td {% if date.current_month %}class="bg-primary"{% endif %}>{{ date.percent|floatformat }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+                <div class="col-md-2">
+                    <table class="table table-condensed table-bordered small table-hover table-striped" id="CorpTable">
+                        <thead>
+                        <tr style="cursor: pointer; background: #E2FADB;">
+                            <th>Итого</th>
+                            <th class="text-center">
+                                <nobr>{{ all_corp_orders }} шт</nobr>
+                            </th>
+                            <th class="text-center">
+                                <nobr>{{ all_corp_money }} ₽</nobr>
+                            </th>
+                        </tr>
+                        </thead>
+                        {% for corp in final_corporate_chart %}
+                            {% if corp %}
+                                <tr onclick="document.location = '/stat/corp_y_m/{{ in_year }}/{{ in_month }}/{{ corp.idcorporate }}';" style="cursor: pointer;">
+                                    <td {% if corp.current_corp %}class="bg-primary"{% endif %}>{{ corp.name }}</td>
+                                    <td class="text-center {% if corp.current_corp %}bg-primary{% endif %}">{{ corp.count }}</td>
+                                    <td class="text-center {% if corp.current_corp %}bg-primary{% endif %}">{{ corp.sum|floatformat }}</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </table>
+                </div>
+                <div class="col-md-8">
+                    <table class="table table-condensed table-bordered small" id="OrderTable">
+                        <thead>
+                        <tr style="cursor: pointer; background: #E2FADB;">
+                            <th>Дата</th>
+                            <th>Откуда</th>
+                            <th>Куда</th>
+                            <th>Пассажир</th>
+                            <th>Телефон</th>
+                            <th>Комментарий</th>
+                            <th>Комментарий адрес</th>
+                            <th>Сумма</th>
+                        </tr>
+                        </thead>
+                        {% for order in orders_current_corp %}
+                            <tr>
+                                <td style="white-space: nowrap">{{ order.deliverytime|date:"j N D H:i" }}</td>
+                                <td>{{ order.deliverystr }}</td>
+                                <td>{{ order.destinationstr }}</td>
+                                <td style="white-space: nowrap">{{ order.passengername }}</td>
+                                <td>{{ order.phone }}</td>
+                                <td>{{ order.description }}</td>
+                                <td>{{ order.addrdescription }}</td>
+                                <td style="font-weight: bold">{{ order.cost|floatformat }}</td>
+
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+            <p class="text-danger">Отключенные корп.клиенты:
+                        {% for corp_name in disable_corp_list %}{{ corp_name }}, {% endfor %}</p>
+        {% endif %}
+    {% endspaceless %}
+    <script type="text/javascript">
+        {#Сортировка таблиц средствами jquerry плагина TABLESORTER#}
+        $(document).ready(function () {
+                $("#CorpTable").tablesorter({sortList: [[0, 0]]});
+                $("#OrderTable").tablesorter({sortList: [[0, 0]]});
+            }
+        );
+    </script>
+{% endblock %}

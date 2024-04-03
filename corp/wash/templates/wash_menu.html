@@ -1,0 +1,7 @@
+    <a href="/wash" class="btn btn-primary">Новый заказ</a>
+{% if user.is_authenticated %}
+    <a href="/wash/price" class="btn btn-primary">Прайс</a>
+    &nbsp;Отчеты:&nbsp;<a href="/wash/report_park" {% if report_park_marker %}class="btn btn-primary"{% else %}class="btn btn-default"{% endif %}>Парк</a>
+    <a href="/wash/report_enemy" {% if report_enemy_marker %}class="btn btn-primary"{% else %}class="btn btn-default"{% endif %}>С улицы</a>
+    <a href="/wash/report_all" {% if report_all_marker %}class="btn btn-primary"{% else %}class="btn btn-default"{% endif %}>Итоги / Услуги / Оплаты</a><br><Br>
+{% endif %}
